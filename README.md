@@ -2,6 +2,16 @@
 
 # PER|FORMER
 
+## jackpf Improvements
+
+| Change             	| Documentation                                    	|
+|--------------------	|--------------------------------------------------	|
+| Noise reduction    	| [docs](./doc/improvements/noise-reduction.md)    	|
+| Shape improvements 	| [docs](./doc/improvements/shape-improvements.md) 	|
+| MIDI improvements 	| [docs](./doc/improvements/midi-improvements.md) 	|
+
+--- original documentation below ---
+
 <a href="doc/sequencer.jpg"><img src="doc/sequencer.jpg"/></a>
 
 ## Overview
