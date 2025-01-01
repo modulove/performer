@@ -17,6 +17,7 @@ $(DL_DIR):
 
 # Determine host OS
 UNAME := $(shell uname)
+ARCH := $(shell uname -m)
 
 # Linux
 ifeq ($(UNAME), Linux)
@@ -50,10 +51,10 @@ tools_clean: arm_sdk_clean openocd_clean
 .PHONY: arm_sdk_install
 
 # Source: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
-ARM_SDK_URL_BASE := https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update
+ARM_SDK_URL_BASE := https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major
 
 ifdef LINUX
-  ARM_SDK_URL := $(ARM_SDK_URL_BASE)-linux.tar.bz2
+  ARM_SDK_URL := $(ARM_SDK_URL_BASE)-$(ARCH)-linux.tar.bz2
 endif
 
 ifdef MACOSX
