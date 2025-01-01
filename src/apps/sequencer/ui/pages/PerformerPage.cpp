@@ -35,7 +35,7 @@ void PerformerPage::draw(Canvas &canvas) {
     const char *functionNames[] = { "LATCH", "SYNC", "UNMUTE", "FILL", hasCancel ? "CANCEL" : nullptr };
 
     WindowPainter::clear(canvas);
-    WindowPainter::drawHeader(canvas, _model, _engine, "PERFORMER");
+    WindowPainter::drawHeader(canvas, _model, _engine, "PERFORM");
     WindowPainter::drawFooter(canvas, functionNames, pageKeyState());
 
     constexpr int Border = 4;
