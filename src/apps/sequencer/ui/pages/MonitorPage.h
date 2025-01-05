@@ -25,12 +25,14 @@ private:
     void drawCvOut(Canvas &canvas);
     void drawMidi(Canvas &canvas);
     void drawStats(Canvas &canvas);
+    void drawVersion(Canvas &canvas);
 
     enum class Mode : uint8_t {
         CvIn,
         CvOut,
         Midi,
         Stats,
+        Version,
     };
 
     Mode _mode = Mode::CvIn;

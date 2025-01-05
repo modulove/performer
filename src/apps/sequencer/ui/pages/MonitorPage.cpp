@@ -12,9 +12,10 @@ enum class Function {
     CvOut   = 1,
     Midi    = 2,
     Stats   = 3,
+    Version = 4,
 };
 
-static const char *functionNames[] = { "CV IN", "CV OUT", "MIDI", "STATS", nullptr };
+static const char *functionNames[] = { "CV IN", "CV OUT", "MIDI", "STATS", "Version", nullptr };
 
 static void formatMidiMessage(StringBuilder &eventStr, StringBuilder &dataStr, const MidiMessage &msg) {
     if (msg.isChannelMessage()) {
@@ -107,6 +108,9 @@ void MonitorPage::draw(Canvas &canvas) {
     case Mode::Stats:
         drawStats(canvas);
         break;
+    case Mode::Version:
+        drawVersion(canvas);
+        break;
     }
 }
 
@@ -133,6 +137,9 @@ void MonitorPage::keyPress(KeyPressEvent &event) {
             break;
         case Function::Stats:
             _mode = Mode::Stats;
+            break;
+        case Function::Version:
+            _mode = Mode::Version;
             break;
         }
     }
@@ -225,4 +232,11 @@ void MonitorPage::drawStats(Canvas &canvas) {
         drawValue(2, "USBMIDI OVF:", str);
     }
 
+}
+
+void MonitorPage::drawVersion(Canvas &canvas) {
+    canvas.setFont(Font::Small);
+    canvas.drawTextCentered(0, 10, Width, 16, CONFIG_VERSION_NAME);
+    FixedStringBuilder<16> str("Version %d.%d.%d", CONFIG_VERSION_MAJOR, CONFIG_VERSION_MINOR, CONFIG_VERSION_REVISION);
+    canvas.drawTextCentered(0, 25, Width, 16, str);
 }
