@@ -2,8 +2,10 @@
 
 #include <cstdint>
 #include <core/gfx/Canvas.h>
+#include <os/os.h>
 #include "Key.h"
 #include "Event.h"
+#include "../intro/Intro.h"
 
 class Screensaver {
 public:
@@ -11,7 +13,9 @@ public:
         _canvas(canvas),
         _screenOffAfter(screenOffAfter),
         _wakeMode(wakeMode)
-    {}
+    {
+        _intro.init();
+    }
 
     void on();
     void off();
@@ -28,6 +32,7 @@ private:
     void consumeKey(Event &event, Key key);
 
     Canvas &_canvas;
+    Intro _intro;
     bool _screenSaved;
     bool _buttonPressed;
     uint32_t _screenOnTicks;

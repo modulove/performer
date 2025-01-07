@@ -90,11 +90,11 @@ void Ui::update() {
     uint32_t currentTicks = os::ticks();
     uint32_t intervalTicks = os::time::ms(1000 / _pageManager.fps());
     if (currentTicks - _lastFrameBufferUpdateTicks >= intervalTicks) {
+        _screensaver.incScreenOnTicks(intervalTicks);
         if (!_screensaver.shouldBeOn()) {
             _pageManager.draw(_canvas);
             _messageManager.update();
             _messageManager.draw(_canvas);
-            _screensaver.incScreenOnTicks(intervalTicks);
         } else {
             _screensaver.on();
         }

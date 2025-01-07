@@ -2,7 +2,13 @@
 
 void Screensaver::on() {
     _screenSaved = true;
-    _canvas.screensaver();
+    //_canvas.screensaver();
+    static uint32_t lastTicks = 0;
+    uint32_t currentTicks = os::ticks();
+    float dt = float(currentTicks - lastTicks) / os::time::ms(1000);
+    lastTicks = currentTicks;
+    _intro.update(dt);
+    _intro.draw(_canvas);
 }
 
 void Screensaver::off() {
