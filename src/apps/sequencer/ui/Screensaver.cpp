@@ -1,13 +1,13 @@
 #include "Screensaver.h"
 
-void Screensaver::on() {
+void Screensaver::on(uint8_t gates) {
     _screenSaved = true;
     //_canvas.screensaver();
     static uint32_t lastTicks = 0;
     uint32_t currentTicks = os::ticks();
     float dt = float(currentTicks - lastTicks) / os::time::ms(1000);
     lastTicks = currentTicks;
-    _intro.update(dt);
+    _intro.update(dt, gates);
     _intro.draw(_canvas);
 }
 

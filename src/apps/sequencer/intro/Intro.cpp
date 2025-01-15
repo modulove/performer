@@ -43,10 +43,12 @@ Intro::Intro() {
 
 void Intro::init() {
     _time = 0.f;
+    _pulse_state = 0;
 }
 
-void Intro::update(float dt) {
+void Intro::update(float dt, uint8_t gates) {
     _time += dt;
+    _pulse_state = gates;
 }
 
 void Intro::draw(Canvas &canvas) {
@@ -68,7 +70,9 @@ void Intro::draw(Canvas &canvas) {
     canvas.setColor(Color::MediumBright);
 
     for (int instance = -2; instance <= 2; ++instance) {
-        Mat4 modelMatrix = Mat4::translate(Vec3(instance * 6.f, 0.f, 0.f)) * Mat4::rotXYZ(Vec3((_time + instance) * 0.3, (_time + instance) * 0.7, (_time + instance) * 1.3));
+        bool pulse = (_pulse_state >> (2 - instance)) & 1;
+
+        Mat4 modelMatrix = Mat4::translate(Vec3(instance * 6.f, 0.f, pulse? -1.f : 0.f)) * Mat4::rotXYZ(Vec3((_time + instance) * 0.3, (_time + instance) * 0.7, (_time + instance) * 1.3));
         Mat4 modelViewProjMatrix = projMatrix * viewMatrix * modelMatrix;
 
         for (int i = 0; i < 8; ++i) {

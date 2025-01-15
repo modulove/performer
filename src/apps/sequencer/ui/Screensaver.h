@@ -17,7 +17,7 @@ public:
         _intro.init();
     }
 
-    void on();
+    void on(uint8_t gates = 0);
     void off();
     bool shouldBeOn();
 

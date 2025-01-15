@@ -96,7 +96,7 @@ void Ui::update() {
             _messageManager.update();
             _messageManager.draw(_canvas);
         } else {
-            _screensaver.on();
+            _screensaver.on(_engine.gateOutput());
         }
         _lcd.draw(_frameBuffer.data());
         _lastFrameBufferUpdateTicks += intervalTicks;
