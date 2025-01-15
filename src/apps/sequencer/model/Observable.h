@@ -11,7 +11,7 @@
 template<typename Event, size_t MaxObservers>
 class Observable {
 public:
-    typedef std::function<void(Event event)> Handler;
+    using Handler = std::function<void(Event event)>;
 
     void watch(Handler handler) {
         ASSERT(_observerCount < MaxObservers, "too many observers");

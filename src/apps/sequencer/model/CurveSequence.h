@@ -22,12 +22,12 @@ public:
     // Types
     //----------------------------------------
 
-    typedef UnsignedValue<6> Shape;
-    typedef UnsignedValue<4> ShapeVariationProbability;
-    typedef UnsignedValue<8> Min;
-    typedef UnsignedValue<8> Max;
-    typedef UnsignedValue<4> Gate;
-    typedef UnsignedValue<3> GateProbability;
+    using Shape = UnsignedValue<6>;
+    using ShapeVariationProbability = UnsignedValue<4>;
+    using Min = UnsignedValue<8>;
+    using Max = UnsignedValue<8>;
+    using Gate = UnsignedValue<4>;
+    using GateProbability = UnsignedValue<3>;
 
     enum class Layer {
         Shape,
@@ -163,7 +163,7 @@ public:
         } _data1;
     };
 
-    typedef std::array<Step, CONFIG_STEP_COUNT> StepArray;
+    using StepArray = std::array<Step, CONFIG_STEP_COUNT>;
 
     //----------------------------------------
     // Properties

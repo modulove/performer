@@ -26,7 +26,7 @@ public:
     virtual void midi(MidiEvent &event) override;
 
 private:
-    typedef NoteSequence::Layer Layer;
+    using Layer = NoteSequence::Layer;
 
     static const int StepCount = 16;
 

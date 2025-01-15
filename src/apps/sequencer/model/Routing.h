@@ -510,7 +510,7 @@ public:
         friend class Routing;
     };
 
-    typedef std::array<Route, CONFIG_ROUTE_COUNT> RouteArray;
+    using RouteArray = std::array<Route, CONFIG_ROUTE_COUNT>;
 
     //----------------------------------------
     // Properties

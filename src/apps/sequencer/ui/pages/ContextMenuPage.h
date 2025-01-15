@@ -8,7 +8,7 @@ class ContextMenuPage : public BasePage {
 public:
     ContextMenuPage(PageManager &manager, PageContext &context);
 
-    typedef std::function<void(int)> ResultCallback;
+    using ResultCallback = std::function<void(int)>;
 
     using BasePage::show;
     void show(ContextMenuModel &contextMenuModel, ResultCallback callback);

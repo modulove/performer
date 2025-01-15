@@ -6,7 +6,7 @@
 
 namespace Rhythm {
 
-    typedef RhythmString<CONFIG_STEP_COUNT> Pattern;
+    using Pattern = RhythmString<CONFIG_STEP_COUNT>;
 
     Pattern euclidean(int beats, int steps);
 

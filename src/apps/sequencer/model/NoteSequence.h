@@ -22,17 +22,17 @@ public:
     // Types
     //----------------------------------------
 
-    typedef UnsignedValue<3> GateProbability;
-    typedef SignedValue<4> GateOffset;
-    typedef UnsignedValue<2> Retrigger;
-    typedef UnsignedValue<3> RetriggerProbability;
-    typedef UnsignedValue<3> Length;
-    typedef SignedValue<4> LengthVariationRange;
-    typedef UnsignedValue<3> LengthVariationProbability;
-    typedef SignedValue<7> Note;
-    typedef SignedValue<7> NoteVariationRange;
-    typedef UnsignedValue<3> NoteVariationProbability;
-    typedef UnsignedValue<7> Condition;
+    using GateProbability = UnsignedValue<3>;
+    using GateOffset = SignedValue<4>;
+    using Retrigger = UnsignedValue<2>;
+    using RetriggerProbability = UnsignedValue<3>;
+    using Length = UnsignedValue<3>;
+    using LengthVariationRange = SignedValue<4>;
+    using LengthVariationProbability = UnsignedValue<3>;
+    using Note = SignedValue<7>;
+    using NoteVariationRange = SignedValue<7>;
+    using NoteVariationProbability = UnsignedValue<3>;
+    using Condition = UnsignedValue<7>;
 
     static_assert(int(Types::Condition::Last) <= Condition::Max + 1, "Condition enum does not fit");
 
@@ -221,7 +221,7 @@ public:
         } _data1;
     };
 
-    typedef std::array<Step, CONFIG_STEP_COUNT> StepArray;
+    using StepArray = std::array<Step, CONFIG_STEP_COUNT>;
 
     //----------------------------------------
     // Properties

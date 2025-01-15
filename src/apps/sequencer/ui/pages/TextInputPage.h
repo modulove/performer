@@ -7,7 +7,7 @@ class TextInputPage : public BasePage {
 public:
     TextInputPage(PageManager &manager, PageContext &context);
 
-    typedef std::function<void(bool, const char *)> ResultCallback;
+    using ResultCallback = std::function<void(bool, const char *)>;
 
     using BasePage::show;
     void show(const char *title, const char *text, size_t maxTextLength, ResultCallback callback);

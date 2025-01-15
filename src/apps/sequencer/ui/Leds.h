@@ -12,7 +12,7 @@
 
 class Leds {
 public:
-    typedef std::array<std::pair<uint8_t, uint8_t>, CONFIG_BLM_ROWS * CONFIG_BLM_COLS_LED> LedArray;
+    using LedArray = std::array<std::pair<uint8_t, uint8_t>, CONFIG_BLM_ROWS * CONFIG_BLM_COLS_LED>;
 
     void clear() {
         _array.fill({ 0, 0 });

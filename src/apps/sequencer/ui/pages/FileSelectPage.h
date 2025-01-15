@@ -10,7 +10,7 @@ class FileSelectPage : public ListPage {
 public:
     FileSelectPage(PageManager &manager, PageContext &context);
 
-    typedef std::function<void(bool, int)> ResultCallback;
+    using ResultCallback = std::function<void(bool, int)>;
 
     using ListPage::show;
     void show(const char *title, FileType type, int selectedSlot, bool allowEmpty, ResultCallback callback);

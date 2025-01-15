@@ -6,7 +6,7 @@
 
 #include <bitset>
 
-typedef std::bitset<CONFIG_BLM_ROWS * CONFIG_BLM_COLS_BUTTON + 1> KeyState;
+using KeyState = std::bitset<CONFIG_BLM_ROWS * CONFIG_BLM_COLS_BUTTON + 1>;
 
 class Key {
 public:

@@ -12,7 +12,7 @@ public:
     // Types
     //----------------------------------------
 
-    typedef std::array<NoteSequence, CONFIG_PATTERN_COUNT + CONFIG_SNAPSHOT_COUNT> NoteSequenceArray;
+    using NoteSequenceArray = std::array<NoteSequence, CONFIG_PATTERN_COUNT + CONFIG_SNAPSHOT_COUNT>;
 
     // FillMode
 

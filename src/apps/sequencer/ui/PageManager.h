@@ -15,7 +15,7 @@ struct Pages;
 class PageManager {
 public:
     // called before entering a page
-    typedef std::function<void(Page *)> PageSwitchHandler;
+    using PageSwitchHandler = std::function<void(Page *)>;
 
     PageManager(Pages &pages);
 

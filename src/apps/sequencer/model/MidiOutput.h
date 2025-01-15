@@ -252,7 +252,7 @@ public:
         } _data;
     };
 
-    typedef std::array<Output, CONFIG_MIDI_OUTPUT_COUNT> OutputArray;
+    using OutputArray = std::array<Output, CONFIG_MIDI_OUTPUT_COUNT>;
 
     //----------------------------------------
     // Properties

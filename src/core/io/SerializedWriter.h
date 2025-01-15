@@ -5,7 +5,7 @@
 
 class SerializedWriter {
 public:
-    typedef std::function<void(const void *, size_t)> Writer;
+    using Writer = std::function<void(const void *, size_t)>;
 
     SerializedWriter(Writer writer) :
         _writer(writer)

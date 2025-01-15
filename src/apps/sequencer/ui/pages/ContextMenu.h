@@ -6,8 +6,8 @@
 
 class ContextMenu : public ContextMenuModel {
 public:
-    typedef std::function<void(int)> ActionCallback;
-    typedef std::function<bool(int)> ItemEnabledCallback;
+    using ActionCallback = std::function<void(int)>;
+    using ItemEnabledCallback = std::function<bool(int)>;
 
     ContextMenu() = default;
 

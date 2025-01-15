@@ -8,7 +8,7 @@ class GeneratorSelectPage : public ListPage {
 public:
     GeneratorSelectPage(PageManager &manager, PageContext &context);
 
-    typedef std::function<void(bool, Generator::Mode)> ResultCallback;
+    using ResultCallback = std::function<void(bool, Generator::Mode)>;
 
     using ListPage::show;
     void show(ResultCallback callback);

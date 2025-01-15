@@ -12,7 +12,7 @@ public:
     // Types
     //----------------------------------------
 
-    typedef std::array<CurveSequence, CONFIG_PATTERN_COUNT + CONFIG_SNAPSHOT_COUNT> CurveSequenceArray;
+    using CurveSequenceArray = std::array<CurveSequence, CONFIG_PATTERN_COUNT + CONFIG_SNAPSHOT_COUNT>;
 
     // FillMode
 

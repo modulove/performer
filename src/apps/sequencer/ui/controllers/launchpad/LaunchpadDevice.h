@@ -17,8 +17,8 @@ public:
     static constexpr int SceneRow = 8;
     static constexpr int FunctionRow = 9;
 
-    typedef std::function<bool(uint8_t cable, const MidiMessage &)> SendMidiHandler;
-    typedef std::function<void(int, int, bool)> ButtonHandler;
+    using SendMidiHandler = std::function<bool(uint8_t cable, const MidiMessage &)>;
+    using ButtonHandler = std::function<void(int, int, bool)>;
 
     struct Color {
         union {

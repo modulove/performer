@@ -8,7 +8,7 @@ class ConfirmationPage : public BasePage {
 public:
     ConfirmationPage(PageManager &manager, PageContext &context);
 
-    typedef std::function<void(bool)> ResultCallback;
+    using ResultCallback = std::function<void(bool)>;
 
     using BasePage::show;
     void show(const char *text, ResultCallback callback);

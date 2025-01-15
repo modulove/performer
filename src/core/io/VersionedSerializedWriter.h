@@ -8,7 +8,7 @@
 
 class VersionedSerializedWriter {
 public:
-    typedef std::function<void(const void *, size_t)> Writer;
+    using Writer = std::function<void(const void *, size_t)>;
 
     VersionedSerializedWriter(Writer writer, uint32_t writerVersion) :
         _writer(writer),

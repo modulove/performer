@@ -8,7 +8,7 @@
 
 class VersionedSerializedReader {
 public:
-    typedef std::function<void(void *, size_t)> Reader;
+    using Reader = std::function<void(void *, size_t)>;
 
     VersionedSerializedReader(Reader reader, uint32_t readerVersion) :
         _reader(reader),

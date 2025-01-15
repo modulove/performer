@@ -26,9 +26,9 @@ public:
 
     static constexpr size_t NameLength = FileHeader::NameLength;
 
-    typedef std::array<Track, CONFIG_TRACK_COUNT> TrackArray;
-    typedef std::array<uint8_t, CONFIG_CHANNEL_COUNT> CvOutputTrackArray;
-    typedef std::array<uint8_t, CONFIG_CHANNEL_COUNT> GateOutputArray;
+    using TrackArray = std::array<Track, CONFIG_TRACK_COUNT>;
+    using CvOutputTrackArray = std::array<uint8_t, CONFIG_CHANNEL_COUNT>;
+    using GateOutputArray = std::array<uint8_t, CONFIG_CHANNEL_COUNT>;
 
     Project();
 

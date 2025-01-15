@@ -22,7 +22,7 @@ public:
         static constexpr int ItemsPerVolt = 1;
         static constexpr int ItemCount = (MaxVoltage - MinVoltage) * ItemsPerVolt + 1;
 
-        typedef std::array<uint16_t, ItemCount> ItemArray;
+        using ItemArray = std::array<uint16_t, ItemCount>;
 
         // items
 
@@ -106,7 +106,7 @@ public:
         ItemArray _items;
     };
 
-    typedef std::array<CvOutput, CONFIG_CV_OUTPUT_CHANNELS> CvOutputArray;
+    using CvOutputArray = std::array<CvOutput, CONFIG_CV_OUTPUT_CHANNELS>;
 
     //----------------------------------------
     // cvOutputs

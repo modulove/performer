@@ -14,7 +14,7 @@
 
 class ClipBoard {
 public:
-    typedef std::bitset<CONFIG_STEP_COUNT> SelectedSteps;
+    using SelectedSteps = std::bitset<CONFIG_STEP_COUNT>;
 
     ClipBoard(Project &project);
 

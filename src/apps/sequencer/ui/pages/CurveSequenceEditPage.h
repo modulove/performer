@@ -25,7 +25,7 @@ public:
     virtual void encoder(EncoderEvent &event) override;
 
 private:
-    typedef CurveSequence::Layer Layer;
+    using Layer = CurveSequence::Layer;
 
     static const int StepCount = 16;
 

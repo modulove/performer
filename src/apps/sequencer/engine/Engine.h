@@ -33,17 +33,17 @@
 
 class Engine : private Clock::Listener {
 public:
-    typedef Container<NoteTrackEngine, CurveTrackEngine, MidiCvTrackEngine> TrackEngineContainer;
-    typedef std::array<TrackEngineContainer, CONFIG_TRACK_COUNT> TrackEngineContainerArray;
-    typedef std::array<TrackEngine *, CONFIG_TRACK_COUNT> TrackEngineArray;
-    typedef std::array<UpdateReducer<os::time::ms(25)>, CONFIG_TRACK_COUNT> TrackUpdateReducerArray;
+    using TrackEngineContainer = Container<NoteTrackEngine, CurveTrackEngine, MidiCvTrackEngine>;
+    using TrackEngineContainerArray = std::array<TrackEngineContainer, CONFIG_TRACK_COUNT>;
+    using TrackEngineArray = std::array<TrackEngine *, CONFIG_TRACK_COUNT>;
+    using TrackUpdateReducerArray = std::array<UpdateReducer<os::time::ms(25)>, CONFIG_TRACK_COUNT>;
 
-    typedef std::function<bool(MidiPort port, uint8_t cable, const MidiMessage &message)> MidiReceiveHandler;
+    using MidiReceiveHandler = std::function<bool(MidiPort port, uint8_t cable, const MidiMessage &message)>;
 
-    typedef std::function<void(uint16_t vendorId, uint16_t productId)> UsbMidiConnectHandler;
-    typedef std::function<void()> UsbMidiDisconnectHandler;
+    using UsbMidiConnectHandler = std::function<void(uint16_t vendorId, uint16_t productId)>;
+    using UsbMidiDisconnectHandler = std::function<void()>;
 
-    typedef std::function<void(const char *text, uint32_t duration)> MessageHandler;
+    using MessageHandler = std::function<void(const char *text, uint32_t duration)>;
 
     enum ClockSource {
         ClockSourceExternal,

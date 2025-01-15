@@ -23,8 +23,8 @@ public:
 
     static constexpr size_t NameLength = FileHeader::NameLength;
 
-    typedef std::array<UserScale, CONFIG_USER_SCALE_COUNT> Array;
-    typedef std::array<int16_t, CONFIG_USER_SCALE_SIZE> ItemArray;
+    using Array = std::array<UserScale, CONFIG_USER_SCALE_COUNT>;
+    using ItemArray = std::array<int16_t, CONFIG_USER_SCALE_SIZE>;
 
     enum class Mode : uint8_t {
         Chromatic,

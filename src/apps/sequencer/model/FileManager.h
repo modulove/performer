@@ -49,8 +49,8 @@ public:
 
     // File tasks
 
-    typedef std::function<fs::Error(void)> TaskExecuteCallback;
-    typedef std::function<void(fs::Error)> TaskResultCallback;
+    using TaskExecuteCallback = std::function<fs::Error(void)>;
+    using TaskResultCallback = std::function<void(fs::Error)>;
 
     static void task(TaskExecuteCallback executeCallback, TaskResultCallback resultCallback);
     static void processTask();

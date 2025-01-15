@@ -110,5 +110,5 @@ private:
     int8_t _channel;
 };
 
-typedef MidiConfig<true> MidiSourceConfig;
-typedef MidiConfig<false> MidiTargetConfig;
+using MidiSourceConfig = MidiConfig<true>;
+using MidiTargetConfig = MidiConfig<false>;

@@ -8,7 +8,7 @@
 
 #include <array>
 
-typedef std::array<uint8_t, CONFIG_STEP_COUNT> GeneratorPattern;
+using GeneratorPattern = std::array<uint8_t, CONFIG_STEP_COUNT>;
 
 class Generator {
 public:

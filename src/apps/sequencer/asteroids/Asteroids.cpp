@@ -48,7 +48,7 @@ static const std::array<Vec2, 4> playerShape = {{
     { -5.f, 5.f },
 }};
 
-typedef std::array<Vec2, 16> AsteroidShape;
+using AsteroidShape = std::array<Vec2, 16>;
 static std::array<AsteroidShape, 4> asteroidShapes;
 
 static void drawShape(Canvas &canvas, Mat3 &transform, const Vec2 *vertices, size_t count) {

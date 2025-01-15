@@ -35,7 +35,7 @@ public:
         }
     };
 
-    typedef std::function<void(const Result &result)> ResultCallback;
+    using ResultCallback = std::function<void(const Result &result)>;
 
     MidiLearn();
 

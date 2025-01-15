@@ -91,5 +91,5 @@ private:
     int _default;;
 };
 
-typedef SequenceBuilderImpl<NoteSequence> NoteSequenceBuilder;
-typedef SequenceBuilderImpl<CurveSequence> CurveSequenceBuilder;
+using NoteSequenceBuilder = SequenceBuilderImpl<NoteSequence>;
+using CurveSequenceBuilder = SequenceBuilderImpl<CurveSequence>;

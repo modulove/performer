@@ -45,4 +45,4 @@ private:
     T *_data;
 };
 
-typedef FrameBuffer<uint8_t> FrameBuffer8bit;
+using FrameBuffer8bit = FrameBuffer<uint8_t>;

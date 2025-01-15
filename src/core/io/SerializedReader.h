@@ -5,7 +5,7 @@
 
 class SerializedReader {
 public:
-    typedef std::function<void(void *, size_t)> Reader;
+    using Reader = std::function<void(void *, size_t)>;
 
     SerializedReader(Reader reader) :
         _reader(reader)
