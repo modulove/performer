@@ -16,6 +16,67 @@ After encountering instability on the mebitek fork, I've decided to start from t
 | Shape improvements 	| [docs](./doc/improvements/shape-improvements.md) 	|
 | MIDI improvements 	| [docs](./doc/improvements/midi-improvements.md) 	|
 
+## POW|FORMER Features (modulove fork)
+
+This fork adds extensive performance-oriented features for live electronic music and modular integration:
+
+### 🎹 16-Track Support
+- **Dual bank system** - 2 banks of 8 tracks with visual LED distinction (bank 2 uses red LEDs)
+- **Extended MIDI routing** - All 16 tracks available as note/gate/velocity/CC sources
+- **Bank switching** - Seamless switching between banks on all pages
+- **Limitations**: 8 patterns per track, 4 song slots (CONFIG_PATTERN_COUNT/CONFIG_SONG_SLOT_COUNT)
+
+### 🌊 8 LFO Modulators
+- **Independent modulators** - 8 LFOs with multiple waveform shapes:
+  - Basic: Sine, Triangle, Saw Up/Down, Square
+  - Random: Smooth Random, Stepped Random (with Smooth parameter 0-2000ms)
+  - Gate-triggered: Gate Random Step
+- **Waveform preview** - Real-time oscilloscope display
+- **Flexible routing** - Quick-map popup for MIDI CC or Note output
+- **Musical divisions** - Including triplets (1/4T, 1/8T, 1/16T, 1/32T, 1/64T) and dotted notes (1/2., 1/4., 1/8., 1/16., 1/32.)
+- **Presets**:
+  - "PR. T9-16": Maps tracks 9-16 to MIDI 1-8 @ velocity 127
+  - "PR. M1-8": Maps Mod 1-8 to MIDI CC 0 on channels 1-8
+
+### ⏱️ Microtiming Recording
+- **Capture Timing** - Record exact keyboard/MIDI input timing during live recording
+- **Timing Quantize** (0-100%) - Blend between full microtiming capture and grid quantization
+  - 0% = Full microtiming (natural feel)
+  - 50% = Hybrid (default)
+  - 100% = Full quantization (perfect grid)
+- **16-step resolution** - GateOffset stores 0-15 timing subdivisions
+- **Live workflow** - Records timing automatically during performance
+
+### 🎭 Enhanced Performer Page
+- **Pattern mode LEDs**:
+  - Green = Active (not muted)
+  - Red = Muted
+  - Yellow = Selected
+- **Always-visible pattern numbers** - Dimmed display for muted tracks in pattern mode
+- **All-tracks view** - See status of all 16 tracks simultaneously
+- **Improved visual feedback** - Consistent LED behavior across both banks
+
+### 🔌 Advanced MIDI/CV Routing
+- **CV to MIDI CC** - Map CV inputs 1-4 to MIDI CC outputs
+- **Extended sources** - Tracks 1-16, Mod 1-8, CV In 1-4 all available
+- **Enum validation** - Crash protection for loading old projects
+- **Improved display** - Clear source labels ("Mod 1-8", "CV In 1-4", "T9-16")
+
+### 🎨 UI/UX Improvements
+- **LED color coding** - Bank 2 sequences use red LEDs for visual distinction
+- **Shortened labels** - Optimized context menu text for readability
+- **Consistent navigation** - Unified page behavior across all track modes
+- **Better parameter editing** - Encoder acceleration and shift modifiers
+
+### 💾 Technical Details
+- **Memory footprint**: 335KB firmware (335540 text + 6196 data + 150948 bss)
+- **Project compatibility**: Version27 format with backward compatibility
+- **PPQN resolution**: 192 ticks per quarter note
+- **Microtiming resolution**: ~15.6ms per offset increment @ 120 BPM
+
+### 📦 Build Information
+Firmware builds to `UPDATE.DAT` file ready for bootloader flashing. Latest build is automatically copied to Desktop as `UPDATE_16TRACKS_MINIMAL.DAT`.
+
 --- original documentation below ---
 
 <a href="doc/sequencer.jpg"><img src="doc/sequencer.jpg"/></a>
