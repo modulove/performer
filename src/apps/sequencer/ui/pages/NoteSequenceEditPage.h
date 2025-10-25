@@ -65,4 +65,9 @@ private:
     StepSelection<CONFIG_STEP_COUNT> _stepSelection;
 
     Container<NoteSequenceBuilder> _builderContainer;
+
+    // Double-tap gate toggle
+    int _lastTappedStep = -1;
+    uint32_t _lastTapTicks = 0;
+    static const uint32_t DoubleTapTimeout = 300; // ms
 };

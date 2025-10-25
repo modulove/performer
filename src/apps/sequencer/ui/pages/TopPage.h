@@ -39,6 +39,7 @@ private:
 
         // aux modes
         UserScale       = PageKeyMap::UserScale,
+        Modulator       = PageKeyMap::Modulator,
         Monitor         = PageKeyMap::Monitor,
         System          = PageKeyMap::System,
 
@@ -53,4 +54,11 @@ private:
 
     Mode _mode;
     Mode _lastMode;
+
+    // Track bank state (0 = tracks 0-7, 1 = tracks 8-15)
+    int _trackBank = 0;
+
+    // For double-tap detection
+    uint32_t _lastTrackPressTime[8] = {0};
+    int _lastTrackPressed = -1;
 };

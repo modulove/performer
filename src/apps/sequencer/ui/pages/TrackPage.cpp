@@ -75,14 +75,18 @@ void TrackPage::setTrack(Track &track) {
         _noteTrackListModel.setTrack(track.noteTrack());
         newListModel = &_noteTrackListModel;
         break;
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve:
         _curveTrackListModel.setTrack(track.curveTrack());
         newListModel = &_curveTrackListModel;
         break;
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
     case Track::TrackMode::MidiCv:
         _midiCvTrackListModel.setTrack(track.midiCvTrack());
         newListModel = &_midiCvTrackListModel;
         break;
+#endif
     case Track::TrackMode::Last:
         ASSERT(false, "invalid track mode");
         break;

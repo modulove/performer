@@ -23,8 +23,12 @@ public:
 
 private:
     void updateFills();
+    int clamp(int value, int min, int max);
 
     bool _modal = false;
     bool _latching = false;
     bool _syncing = false;
+    bool _allTracksView = false;  // UX-23: Toggle between 8-track and 16-track views
+    bool _patternMode = false;     // Pattern browsing mode for all-tracks view
+    uint16_t _selectedTracks = 0;  // Bit mask for multi-track selection in pattern mode (16 bits for 16 tracks)
 };

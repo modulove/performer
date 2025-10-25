@@ -17,7 +17,13 @@
 void LedPainter::drawTrackGatesAndSelectedTrack(Leds &leds, const Engine &engine, const PlayState &playState, int selectedTrack) {
     bool blink = (os::ticks() % os::time::ms(200)) < os::time::ms(100);
 
-    for (int track = 0; track < 8; ++track) {
+    // Determine which bank to show based on selected track
+    int trackOffset = (selectedTrack >= 8) ? 8 : 0;
+    bool invertColors = (trackOffset == 8);  // Invert colors for tracks 9-16 (bank 1)
+
+    for (int i = 0; i < 8; ++i) {
+        int track = trackOffset + i;
+
         const auto &trackEngine = engine.trackEngine(track);
         const auto &trackState = playState.trackState(track);
 
@@ -27,15 +33,17 @@ void LedPainter::drawTrackGatesAndSelectedTrack(Leds &leds, const Engine &engine
 
         if (selected) {
             if (mute) {
-                leds.set(MatrixMap::fromTrack(track), true, !activity);
+                leds.set(MatrixMap::fromTrack(i), true, !activity);
             } else {
-                leds.set(MatrixMap::fromTrack(track), !activity, true);
+                leds.set(MatrixMap::fromTrack(i), !activity, true);
             }
         } else {
             if (mute) {
-                leds.set(MatrixMap::fromTrack(track), !activity, false);
+                // Muted: show dim (inactive) - inverted for bank 1
+                leds.set(MatrixMap::fromTrack(i), invertColors ? false : !activity, invertColors ? !activity : false);
             } else {
-                leds.set(MatrixMap::fromTrack(track), false, activity);
+                // Active: show bright activity - inverted for bank 1
+                leds.set(MatrixMap::fromTrack(i), invertColors ? activity : false, invertColors ? false : activity);
             }
         }
     }

@@ -252,11 +252,20 @@ void NoteSequenceEditPage::updateLeds(Leds &leds) {
     const auto &sequence = _project.selectedNoteSequence();
     int currentStep = trackEngine.isActiveSequence(sequence) ? trackEngine.currentStep() : -1;
 
+    // Invert colors for bank 2 (tracks 9-16)
+    bool invertColors = (_project.selectedTrackIndex() >= 8);
+
     for (int i = 0; i < 16; ++i) {
         int stepIndex = stepOffset() + i;
         bool red = (stepIndex == currentStep) || _stepSelection[stepIndex];
         bool green = (stepIndex != currentStep) && (sequence.step(stepIndex).gate() || _stepSelection[stepIndex]);
-        leds.set(MatrixMap::fromStep(i), red, green);
+
+        // Apply color inversion for bank 2
+        if (invertColors) {
+            leds.set(MatrixMap::fromStep(i), green, red);
+        } else {
+            leds.set(MatrixMap::fromStep(i), red, green);
+        }
     }
 
     LedPainter::drawSelectedSequenceSection(leds, _section);
@@ -307,13 +316,36 @@ void NoteSequenceEditPage::keyPress(KeyPressEvent &event) {
 
     if (!key.shiftModifier() && key.isStep()) {
         int stepIndex = stepOffset() + key.step();
-        switch (layer()) {
-        case Layer::Gate:
+
+        // Check for double-tap to toggle gate in any layer
+        uint32_t currentTicks = os::ticks();
+        bool isDoubleTap = false;
+
+        if (_lastTappedStep == stepIndex &&
+            (currentTicks - _lastTapTicks) < os::time::ms(DoubleTapTimeout)) {
+            // Double tap detected - toggle gate
+            isDoubleTap = true;
             sequence.step(stepIndex).toggleGate();
             event.consume();
-            break;
-        default:
-            break;
+            // Reset to prevent triple-tap
+            _lastTappedStep = -1;
+            _lastTapTicks = 0;
+        } else {
+            // Single tap - update tracking
+            _lastTappedStep = stepIndex;
+            _lastTapTicks = currentTicks;
+        }
+
+        // Original gate layer behavior (only on single tap)
+        if (!isDoubleTap) {
+            switch (layer()) {
+            case Layer::Gate:
+                sequence.step(stepIndex).toggleGate();
+                event.consume();
+                break;
+            default:
+                break;
+            }
         }
     }
 

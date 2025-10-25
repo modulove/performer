@@ -50,6 +50,11 @@ private:
     void recordStep(uint32_t tick, uint32_t divisor);
     int noteFromMidiNote(uint8_t midiNote) const;
 
+    // Polyphonic voice allocation
+    int allocateVoice(int8_t note, uint32_t onTick, uint32_t offTick);
+    void releaseVoice(int voiceIndex);
+    void releaseAllVoices();
+
     bool fill() const {
         return (_noteTrack.fillMuted() || !TrackEngine::mute()) ? TrackEngine::fill() : false;
     }
@@ -104,4 +109,13 @@ private:
     };
 
     SortedQueue<Cv, 16, CvCompare> _cvQueue;
+
+    // Polyphonic voice allocation (up to 4 voices)
+    struct PolyVoice {
+        int8_t note = -1;      // MIDI note number, -1 = inactive
+        uint32_t onTick = 0;   // When note was triggered
+        uint32_t offTick = 0;  // When note should end
+    };
+    std::array<PolyVoice, 4> _polyVoices;
+    int _nextVoiceIndex = 0;  // Round-robin allocation
 };

@@ -23,7 +23,7 @@ public:
     //----------------------------------------
 
     using GateProbability = UnsignedValue<3>;
-    using GateOffset = SignedValue<4>;
+    using GateOffset = UnsignedValue<4>;  // 4 bits = 0 to 15 for 128 steps resolution (0=on beat, 15=max delay)
     using Retrigger = UnsignedValue<2>;
     using RetriggerProbability = UnsignedValue<3>;
     using Length = UnsignedValue<3>;
@@ -95,12 +95,12 @@ public:
             _data0.gateProbability = GateProbability::clamp(gateProbability);
         }
 
-        // gateOffset
+        // gateOffset (0-63: 0=on beat, 63=just before next beat)
 
-        int gateOffset() const { return GateOffset::Min + _data1.gateOffset; }
+        int gateOffset() const { return _data1.gateOffset; }
         void setGateOffset(int gateOffset) {
-            // TODO: allow negative gate delay in the future
-            _data1.gateOffset = std::max(0, GateOffset::clamp(gateOffset)) - GateOffset::Min;
+            // Timing offset 0-63 for micro-timing (0=on beat, 63=one tick before next beat)
+            _data1.gateOffset = GateOffset::clamp(gateOffset);
         }
 
         // slide
@@ -216,8 +216,8 @@ public:
             BitField<uint32_t, 0, Retrigger::Bits> retrigger;
             BitField<uint32_t, 2, RetriggerProbability::Bits> retriggerProbability;
             BitField<uint32_t, 5, GateOffset::Bits> gateOffset;
-            BitField<uint32_t, 9, Condition::Bits> condition;
-            // 16 bits left
+            BitField<uint32_t, 12, Condition::Bits> condition;
+            // 13 bits left (19 bits used: 2+3+7+7)
         } _data1;
     };
 

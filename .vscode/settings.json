@@ -11,5 +11,14 @@
     "git.ignoreLimitWarning": true,
     "cmake.configureOnOpen": false,
     "cortex-debug.openocdPath": "${workspaceFolder}/tools/openocd/bin/openocd",
-    "cortex-debug.armToolchainPath": "${workspaceFolder}/tools/gcc-arm-none-eabi/bin"
+    "cortex-debug.armToolchainPath": "${workspaceFolder}/tools/gcc-arm-none-eabi/bin",
+    "idf.pythonInstallPath": "/opt/homebrew/bin/python3",
+    "files.associations": {
+        "cstdint": "cpp",
+        "cmath": "cpp",
+        "regex": "cpp",
+        "string": "cpp",
+        "algorithm": "cpp",
+        "functional": "cpp"
+    }
 }

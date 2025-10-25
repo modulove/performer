@@ -178,7 +178,7 @@ void SongPage::updateLeds(Leds &leds) {
             }
         } else {
             uint16_t usedPatterns = 0;
-            for (int trackIndex = 0; trackIndex < 8; ++trackIndex) {
+            for (int trackIndex = 0; trackIndex < CONFIG_TRACK_COUNT; ++trackIndex) {
                 if (selectedTracks == 0 || selectedTracks & (1 << trackIndex)) {
                     usedPatterns |= (1 << slot.pattern(trackIndex));
                 }

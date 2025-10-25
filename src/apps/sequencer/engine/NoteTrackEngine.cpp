@@ -341,7 +341,7 @@ void NoteTrackEngine::recordStep(uint32_t tick, uint32_t divisor) {
 
     bool stepWritten = false;
 
-    auto writeStep = [this, divisor, &stepWritten] (int stepIndex, int note, int lengthTicks) {
+    auto writeStep = [this, divisor, &stepWritten] (int stepIndex, int note, int lengthTicks, int noteStartOffset = -1) {
         auto &step = _sequence->step(stepIndex);
         int length = (lengthTicks * NoteSequence::Length::Range) / divisor;
 
@@ -356,6 +356,17 @@ void NoteTrackEngine::recordStep(uint32_t tick, uint32_t divisor) {
         step.setNoteVariationRange(0);
         step.setNoteVariationProbability(NoteSequence::NoteVariationProbability::Max);
         step.setCondition(Types::Condition::Off);
+
+        // MICROTIMING CAPTURE
+        if (_noteTrack.captureTiming() && noteStartOffset >= 0) {
+            // Calculate gate offset with quantize strength
+            int rawOffset = (noteStartOffset * 16) / divisor;  // Scale to 0-15
+            int quantizeStrength = _noteTrack.timingQuantize();  // 0-100%
+            int quantizedOffset = (rawOffset * (100 - quantizeStrength)) / 100;
+            step.setGateOffset(clamp(quantizedOffset, 0, 15));
+        } else {
+            step.setGateOffset(0);  // Default: on the beat
+        }
 
         stepWritten = true;
     };
@@ -381,19 +392,20 @@ void NoteTrackEngine::recordStep(uint32_t tick, uint32_t divisor) {
 
         if (noteStart >= stepStart - margin && noteStart < stepStart + margin) {
             // note on during step start phase
+            int noteOffset = static_cast<int>(noteStart) - static_cast<int>(stepStart);
             if (noteEnd >= stepEnd) {
                 // note hold during step
                 int length = std::min(noteEnd, stepEnd) - stepStart;
-                writeStep(_sequenceState.prevStep(), note, length);
+                writeStep(_sequenceState.prevStep(), note, length, noteOffset);
             } else {
                 // note released during step
                 int length = noteEnd - noteStart;
-                writeStep(_sequenceState.prevStep(), note, length);
+                writeStep(_sequenceState.prevStep(), note, length, noteOffset);
             }
         } else if (noteStart < stepStart && noteEnd > stepStart) {
             // note on during previous step
             int length = std::min(noteEnd, stepEnd) - stepStart;
-            writeStep(_sequenceState.prevStep(), note, length);
+            writeStep(_sequenceState.prevStep(), note, length, 0);  // Already on beat
         }
     }
 

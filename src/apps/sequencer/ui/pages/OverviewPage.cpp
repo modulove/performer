@@ -31,6 +31,7 @@ static void drawNoteTrack(Canvas &canvas, int trackIndex, const NoteTrackEngine 
     }
 }
 
+#if CONFIG_ENABLE_CURVE_TRACKS
 static void drawCurve(Canvas &canvas, int x, int y, int w, int h, float &lastY, const Curve::Function function, float min, float max) {
     const int Step = 1;
 
@@ -81,6 +82,7 @@ static void drawCurveTrack(Canvas &canvas, int trackIndex, const CurveTrackEngin
         canvas.vline(x, y + 1, 7);
     }
 }
+#endif
 
 
 OverviewPage::OverviewPage(PageManager &manager, PageContext &context) :
@@ -105,7 +107,11 @@ void OverviewPage::draw(Canvas &canvas) {
     canvas.vline(192 + 1, 0, 64);
     canvas.vline(192 + 2, 0, 64);
 
-    for (int trackIndex = 0; trackIndex < 8; trackIndex++) {
+    // Determine which bank to show based on selected track
+    int trackOffset = (_project.selectedTrackIndex() >= 8) ? 8 : 0;
+
+    for (int i = 0; i < 8; i++) {
+        int trackIndex = trackOffset + i;
         const auto &track = _project.track(trackIndex);
         const auto &trackState = _project.playState().trackState(trackIndex);
         const auto &trackEngine = _engine.trackEngine(trackIndex);
@@ -113,31 +119,37 @@ void OverviewPage::draw(Canvas &canvas) {
         canvas.setBlendMode(BlendMode::Set);
         canvas.setColor(Color::Medium);
 
-        int y = 5 + trackIndex * 8;
+        int y = 5 + i * 8;
 
         // track number / pattern number
         canvas.setColor(trackState.mute() ? Color::Medium : Color::Bright);
         canvas.drawText(2, y, FixedStringBuilder<8>("T%d", trackIndex + 1));
         canvas.drawText(18, y, FixedStringBuilder<8>("P%d", trackState.pattern() + 1));
 
-        // gate output
-        bool gate = _engine.gateOutput() & (1 << trackIndex);
-        canvas.setColor(gate ? Color::Bright : Color::Medium);
-        canvas.fillRect(256 - 48 + 1, trackIndex * 8 + 1, 6, 6);
+        // gate output (only show for tracks 0-7 which have physical CV/Gate outputs)
+        if (trackIndex < 8) {
+            bool gate = _engine.gateOutput() & (1 << trackIndex);
+            canvas.setColor(gate ? Color::Bright : Color::Medium);
+            canvas.fillRect(256 - 48 + 1, i * 8 + 1, 6, 6);
 
-        // cv output
-        canvas.setColor(Color::Bright);
-        canvas.drawText(256 - 32, y, FixedStringBuilder<8>("%.2fV", _engine.cvOutput().channel(trackIndex)));
+            // cv output
+            canvas.setColor(Color::Bright);
+            canvas.drawText(256 - 32, y, FixedStringBuilder<8>("%.2fV", _engine.cvOutput().channel(trackIndex)));
+        }
 
         switch (track.trackMode()) {
         case Track::TrackMode::Note:
-            drawNoteTrack(canvas, trackIndex, trackEngine.as<NoteTrackEngine>(), track.noteTrack().sequence(trackState.pattern()));
+            drawNoteTrack(canvas, i, trackEngine.as<NoteTrackEngine>(), track.noteTrack().sequence(trackState.pattern()));
             break;
+#if CONFIG_ENABLE_CURVE_TRACKS
         case Track::TrackMode::Curve:
-            drawCurveTrack(canvas, trackIndex, trackEngine.as<CurveTrackEngine>(), track.curveTrack().sequence(trackState.pattern()));
+            drawCurveTrack(canvas, i, trackEngine.as<CurveTrackEngine>(), track.curveTrack().sequence(trackState.pattern()));
             break;
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
         case Track::TrackMode::MidiCv:
             break;
+#endif
         case Track::TrackMode::Last:
             break;
         }

@@ -32,6 +32,8 @@ private:
     void duplicatePattern();
     void sendMidiProgramSave();
 
+    int clamp(int value, int min, int max);
+
     bool _modal = false;
     bool _latching = false;
     bool _syncing = false;

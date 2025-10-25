@@ -42,10 +42,16 @@ void MidiOutput::Output::read(VersionedSerializedReader &reader) {
         reader.read(_data.note.gateSource);
         reader.read(_data.note.noteSource);
         reader.read(_data.note.velocitySource);
+        // Clamp enum values to valid ranges
+        _data.note.gateSource = ModelUtils::clampedEnum(_data.note.gateSource);
+        _data.note.noteSource = ModelUtils::clampedEnum(_data.note.noteSource);
+        _data.note.velocitySource = ModelUtils::clampedEnum(_data.note.velocitySource);
         break;
     case MidiOutput::Output::Event::ControlChange:
         reader.read(_data.controlChange.controlNumber);
         reader.read(_data.controlChange.controlSource);
+        // Clamp enum value to valid range
+        _data.controlChange.controlSource = ModelUtils::clampedEnum(_data.controlChange.controlSource);
         break;
     case MidiOutput::Output::Event::Last:
         break;

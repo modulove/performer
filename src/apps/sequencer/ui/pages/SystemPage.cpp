@@ -117,9 +117,13 @@ void SystemPage::draw(Canvas &canvas) {
 void SystemPage::updateLeds(Leds &leds) {
     int selectedTrack = _project.selectedTrackIndex();
 
-    for (int track = 0; track < 8; ++track) {
-        bool selected = track == selectedTrack;
-        leds.set(MatrixMap::fromTrack(track), selected, selected);
+    // Determine which bank to show based on selected track
+    int trackOffset = (selectedTrack >= 8) ? 8 : 0;
+
+    for (int i = 0; i < 8; ++i) {
+        int trackIndex = trackOffset + i;
+        bool selected = trackIndex == selectedTrack;
+        leds.set(MatrixMap::fromTrack(i), selected, selected);
     }
 
     for (int step = 0; step < 16; ++step) {

@@ -6,12 +6,17 @@
 #include "NudgeTempo.h"
 #include "TrackEngine.h"
 #include "NoteTrackEngine.h"
+#if CONFIG_ENABLE_CURVE_TRACKS
 #include "CurveTrackEngine.h"
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
 #include "MidiCvTrackEngine.h"
+#endif
 #include "CvInput.h"
 #include "CvOutput.h"
 #include "RoutingEngine.h"
 #include "MidiOutputEngine.h"
+#include "ModulatorEngine.h"
 #include "MidiPort.h"
 #include "MidiLearn.h"
 #include "CvGateToMidiConverter.h"
@@ -33,7 +38,14 @@
 
 class Engine : private Clock::Listener {
 public:
-    using TrackEngineContainer = Container<NoteTrackEngine, CurveTrackEngine, MidiCvTrackEngine>;
+    using TrackEngineContainer = Container<NoteTrackEngine
+#if CONFIG_ENABLE_CURVE_TRACKS
+                                           , CurveTrackEngine
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
+                                           , MidiCvTrackEngine
+#endif
+                                           >;
     using TrackEngineContainerArray = std::array<TrackEngineContainer, CONFIG_TRACK_COUNT>;
     using TrackEngineArray = std::array<TrackEngine *, CONFIG_TRACK_COUNT>;
     using TrackUpdateReducerArray = std::array<UpdateReducer<os::time::ms(25)>, CONFIG_TRACK_COUNT>;
@@ -140,6 +152,9 @@ public:
     const MidiOutputEngine &midiOutputEngine() const { return _midiOutputEngine; }
           MidiOutputEngine &midiOutputEngine()       { return _midiOutputEngine; }
 
+    const ModulatorEngine &modulatorEngine() const { return _modulatorEngine; }
+          ModulatorEngine &modulatorEngine()       { return _modulatorEngine; }
+
     const MidiLearn &midiLearn() const { return _midiLearn; }
           MidiLearn &midiLearn()       { return _midiLearn; }
 
@@ -202,6 +217,7 @@ private:
     TrackUpdateReducerArray _trackUpdateReducers;
 
     MidiOutputEngine _midiOutputEngine;
+    ModulatorEngine _modulatorEngine;
 
     RoutingEngine _routingEngine;
     MidiLearn _midiLearn;

@@ -201,6 +201,7 @@ void Routing::writeTarget(Target target, uint8_t tracks, float normalized) {
                         }
                     }
                     break;
+#if CONFIG_ENABLE_CURVE_TRACKS
                 case Track::TrackMode::Curve:
                     if (isTrackTarget(target)) {
                         track.curveTrack().writeRouted(target, intValue, floatValue);
@@ -210,11 +211,14 @@ void Routing::writeTarget(Target target, uint8_t tracks, float normalized) {
                         }
                     }
                     break;
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
                 case Track::TrackMode::MidiCv:
                     if (isTrackTarget(target)) {
                         track.midiCvTrack().writeRouted(target, intValue, floatValue);
                     }
                     break;
+#endif
                 case Track::TrackMode::Last:
                     break;
                 }
@@ -231,8 +235,8 @@ void Routing::read(VersionedSerializedReader &reader) {
     readArray(reader, _routes);
 }
 
-static std::array<uint8_t, size_t(Routing::Target::Last)> routedSet;
-static_assert(sizeof(uint8_t) * 8 >= CONFIG_TRACK_COUNT, "track bits do not fit");
+static std::array<uint16_t, size_t(Routing::Target::Last)> routedSet;
+static_assert(sizeof(uint16_t) * 8 >= CONFIG_TRACK_COUNT, "track bits do not fit");
 
 bool Routing::isRouted(Target target, int trackIndex) {
     size_t targetIndex = size_t(target);
@@ -246,7 +250,7 @@ bool Routing::isRouted(Target target, int trackIndex) {
     return false;
 }
 
-void Routing::setRouted(Target target, uint8_t tracks, bool routed) {
+void Routing::setRouted(Target target, uint16_t tracks, bool routed) {
     size_t targetIndex = size_t(target);
     if (isPerTrackTarget(target)) {
         if (routed) {

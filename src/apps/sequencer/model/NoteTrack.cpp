@@ -64,6 +64,9 @@ void NoteTrack::write(VersionedSerializedWriter &writer) const {
     writer.write(_retriggerProbabilityBias.base);
     writer.write(_lengthBias.base);
     writer.write(_noteProbabilityBias.base);
+    writer.write(_polyphony);
+    writer.write(_captureTiming);
+    writer.write(_timingQuantize);
     writeArray(writer, _sequences);
 }
 
@@ -82,6 +85,9 @@ void NoteTrack::read(VersionedSerializedReader &reader) {
     reader.read(_retriggerProbabilityBias.base);
     reader.read(_lengthBias.base);
     reader.read(_noteProbabilityBias.base);
+    reader.read(_polyphony, ProjectVersion::Version27);  // Added in v27 for polyphonic MIDI
+    reader.read(_captureTiming, ProjectVersion::Version27);  // Added in v27 for micro-timing capture
+    reader.read(_timingQuantize, ProjectVersion::Version27);  // Added in v27 for timing quantization control
 
     // There is a bug in previous firmware versions where writing the properties
     // of a note track did not update the hash value.

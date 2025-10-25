@@ -18,6 +18,7 @@ namespace PageKeyMap {
         Routing         = Key::Track2,
         MidiOutput      = Key::Track3,
         UserScale       = Key::Track4,
+        Modulator       = Key::Track5,
 
         SequenceEdit    = Key::Step0,
         Sequence        = Key::Step1,
@@ -40,6 +41,7 @@ namespace PageKeyMap {
         case Routing:
         case MidiOutput:
         case UserScale:
+        case Modulator:
 
         case SequenceEdit:
         case Sequence:

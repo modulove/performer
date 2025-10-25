@@ -193,3 +193,42 @@ void MidiOutputEngine::sendMidi(MidiPort port, const MidiMessage &message) {
     // always use cable 0
     _engine.sendMidi(port, 0, message);
 }
+
+void MidiOutputEngine::sendCvIn(int cvInIndex, float cv) {
+    for (int outputIndex = 0; outputIndex < CONFIG_MIDI_OUTPUT_COUNT; ++outputIndex) {
+        const auto &output = _midiOutput.output(outputIndex);
+        if (output.event() == MidiOutput::Output::Event::ControlChange) {
+            auto controlSource = output.controlSource();
+            if (controlSource >= MidiOutput::Output::ControlSource::FirstCvIn &&
+                controlSource <= MidiOutput::Output::ControlSource::LastCvIn) {
+                int sourceIndex = int(controlSource) - int(MidiOutput::Output::ControlSource::FirstCvIn);
+                if (sourceIndex == cvInIndex) {
+                    int ccValue = clamp(int((cv + 5.0f) / 10.0f * 127.0f), 0, 127);
+                    auto &state = _outputStates[outputIndex];
+                    MidiPort port = MidiPort(state.target.port());
+                    int channel = state.target.channel();
+                    sendMidi(port, MidiMessage::makeControlChange(channel, output.controlNumber(), ccValue));
+                }
+            }
+        }
+    }
+}
+
+void MidiOutputEngine::sendModulator(int modulatorIndex, int value) {
+    for (int outputIndex = 0; outputIndex < CONFIG_MIDI_OUTPUT_COUNT; ++outputIndex) {
+        const auto &output = _midiOutput.output(outputIndex);
+        if (output.event() == MidiOutput::Output::Event::ControlChange) {
+            auto controlSource = output.controlSource();
+            if (controlSource >= MidiOutput::Output::ControlSource::FirstModulator &&
+                controlSource <= MidiOutput::Output::ControlSource::LastModulator) {
+                int sourceIndex = int(controlSource) - int(MidiOutput::Output::ControlSource::FirstModulator);
+                if (sourceIndex == modulatorIndex) {
+                    auto &state = _outputStates[outputIndex];
+                    MidiPort port = MidiPort(state.target.port());
+                    int channel = state.target.channel();
+                    sendMidi(port, MidiMessage::makeControlChange(channel, output.controlNumber(), value));
+                }
+            }
+        }
+    }
+}

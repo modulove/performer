@@ -6,13 +6,16 @@
 #include "ClockSetupPage.h"
 #include "ConfirmationPage.h"
 #include "ContextMenuPage.h"
+#if CONFIG_ENABLE_CURVE_TRACKS
 #include "CurveSequenceEditPage.h"
 #include "CurveSequencePage.h"
+#endif
 #include "FileSelectPage.h"
 #include "GeneratorPage.h"
 #include "GeneratorSelectPage.h"
 #include "LayoutPage.h"
 #include "MidiOutputPage.h"
+#include "ModulatorPage.h"
 #include "MonitorPage.h"
 #include "NoteSequenceEditPage.h"
 #include "NoteSequencePage.h"
@@ -45,15 +48,20 @@ struct Pages {
     LayoutPage layout;
     TrackPage track;
     NoteSequencePage noteSequence;
+#if CONFIG_ENABLE_CURVE_TRACKS
     CurveSequencePage curveSequence;
+#endif
     NoteSequenceEditPage noteSequenceEdit;
+#if CONFIG_ENABLE_CURVE_TRACKS
     CurveSequenceEditPage curveSequenceEdit;
+#endif
     PatternPage pattern;
     PerformerPage performer;
     SongPage song;
     RoutingPage routing;
     MidiOutputPage midiOutput;
     UserScalePage userScale;
+    ModulatorPage modulator;
     OverviewPage overview;
     SystemPage system;
     // modal pages
@@ -86,15 +94,20 @@ struct Pages {
         layout(manager, context),
         track(manager, context),
         noteSequence(manager, context),
+#if CONFIG_ENABLE_CURVE_TRACKS
         curveSequence(manager, context),
+#endif
         noteSequenceEdit(manager, context),
+#if CONFIG_ENABLE_CURVE_TRACKS
         curveSequenceEdit(manager, context),
+#endif
         pattern(manager, context),
         performer(manager, context),
         song(manager, context),
         routing(manager, context),
         midiOutput(manager, context),
         userScale(manager, context),
+        modulator(manager, context),
         overview(manager, context),
         system(manager, context),
         // modal pages

@@ -546,7 +546,7 @@ public:
 
     // global state for keeping active set of routed targets
     static bool isRouted(Target target, int trackIndex = -1);
-    static void setRouted(Target target, uint8_t tracks, bool routed);
+    static void setRouted(Target target, uint16_t tracks, bool routed);
     static void printRouted(StringBuilder &str, Target target, int trackIndex = -1);
 
 private:

@@ -46,13 +46,13 @@ public:
 
         enum class GateSource : uint8_t {
             FirstTrack,
-            LastTrack = FirstTrack + 7,
+            LastTrack = FirstTrack + 15,
             Last,
         };
 
         enum class NoteSource : uint8_t {
             FirstTrack,
-            LastTrack = FirstTrack + 7,
+            LastTrack = FirstTrack + 15,
             FirstNote,
             LastNote = FirstNote + 127,
             Last,
@@ -60,7 +60,7 @@ public:
 
         enum class VelocitySource : uint8_t {
             FirstTrack,
-            LastTrack = FirstTrack + 7,
+            LastTrack = FirstTrack + 15,
             FirstVelocity,
             LastVelocity = FirstVelocity + 127,
             Last,
@@ -68,7 +68,11 @@ public:
 
         enum class ControlSource : uint8_t {
             FirstTrack,
-            LastTrack = FirstTrack + 7,
+            LastTrack = FirstTrack + 15,
+            FirstModulator,
+            LastModulator = FirstModulator + 7,
+            FirstCvIn,
+            LastCvIn = FirstCvIn + 3,
             Last,
         };
 
@@ -182,7 +186,13 @@ public:
         }
 
         void printControlSource(StringBuilder &str) const {
-            if (!printTrackSource(str, controlSource())) {
+            auto source = ModelUtils::clampedEnum(controlSource());
+            if (!printTrackSource(str, source)) {
+                if (source >= ControlSource::FirstModulator && source <= ControlSource::LastModulator) {
+                    str("Mod %d", int(source) - int(ControlSource::FirstModulator) + 1);
+                } else if (source >= ControlSource::FirstCvIn && source <= ControlSource::LastCvIn) {
+                    str("CV In %d", int(source) - int(ControlSource::FirstCvIn) + 1);
+                }
             }
         }
 

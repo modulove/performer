@@ -122,6 +122,11 @@ void Engine::update() {
     // update cv inputs
     _cvInput.update();
 
+    // send CV inputs to MIDI CC
+    for (int cvInIndex = 0; cvInIndex < CONFIG_CV_INPUT_CHANNELS; ++cvInIndex) {
+        _midiOutputEngine.sendCvIn(cvInIndex, _cvInput.channel(cvInIndex));
+    }
+
     // receive midi events
     receiveMidi();
 
@@ -146,6 +151,16 @@ void Engine::update() {
                 updateOverrides();
                 _routingEngine.update();
             }
+        }
+
+        // tick modulators
+        for (int modulatorIndex = 0; modulatorIndex < CONFIG_MODULATOR_COUNT; ++modulatorIndex) {
+            const auto &modulator = _project.modulator(modulatorIndex);
+            // Get gate from specified track
+            int gateTrack = modulator.gateTrack();
+            bool gate = _trackEngines[gateTrack]->gateOutput(0);
+            _modulatorEngine.tick(tick, modulator, modulatorIndex, gate);
+            _midiOutputEngine.sendModulator(modulatorIndex, _modulatorEngine.currentValue(modulatorIndex));
         }
 
         // update midi outputs, force sending CC on first tick
@@ -427,12 +442,16 @@ void Engine::updateTrackSetups() {
             case Track::TrackMode::Note:
                 trackEngine = trackContainer.create<NoteTrackEngine>(*this, _model, track, linkedTrackEngine);
                 break;
+#if CONFIG_ENABLE_CURVE_TRACKS
             case Track::TrackMode::Curve:
                 trackEngine = trackContainer.create<CurveTrackEngine>(*this, _model, track, linkedTrackEngine);
                 break;
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
             case Track::TrackMode::MidiCv:
                 trackEngine = trackContainer.create<MidiCvTrackEngine>(*this, _model, track, linkedTrackEngine);
                 break;
+#endif
             case Track::TrackMode::Last:
                 break;
             }
@@ -455,14 +474,14 @@ void Engine::updateTrackOutputs() {
         trackCvIndex[trackIndex] = 0;
     }
 
-    for (int trackIndex = 0; trackIndex < CONFIG_TRACK_COUNT; ++trackIndex) {
-        int gateOutputTrack = gateOutputTracks[trackIndex];
+    for (int channelIndex = 0; channelIndex < CONFIG_CHANNEL_COUNT; ++channelIndex) {
+        int gateOutputTrack = gateOutputTracks[channelIndex];
         if (!_gateOutputOverride) {
-            _gateOutput.setGate(trackIndex, _trackEngines[gateOutputTrack]->gateOutput(trackGateIndex[gateOutputTrack]++));
+            _gateOutput.setGate(channelIndex, _trackEngines[gateOutputTrack]->gateOutput(trackGateIndex[gateOutputTrack]++));
         }
-        int cvOutputTrack = cvOutputTracks[trackIndex];
+        int cvOutputTrack = cvOutputTracks[channelIndex];
         if (!_cvOutputOverride) {
-            _cvOutput.setChannel(trackIndex, _trackEngines[cvOutputTrack]->cvOutput(trackCvIndex[cvOutputTrack]++));
+            _cvOutput.setChannel(channelIndex, _trackEngines[cvOutputTrack]->cvOutput(trackCvIndex[cvOutputTrack]++));
         }
     }
 }
@@ -472,6 +491,7 @@ void Engine::reset() {
         trackEngine->reset();
     }
 
+    _modulatorEngine.reset();
     _midiOutputEngine.reset();
 }
 

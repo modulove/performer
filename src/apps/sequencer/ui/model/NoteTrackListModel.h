@@ -71,6 +71,9 @@ private:
         RetriggerProbabilityBias,
         LengthBias,
         NoteProbabilityBias,
+        Polyphony,
+        CaptureTiming,
+        TimingQuantize,
         Last
     };
 
@@ -88,6 +91,9 @@ private:
         case RetriggerProbabilityBias: return "Retrig P. Bias";
         case LengthBias: return "Length Bias";
         case NoteProbabilityBias: return "Note P. Bias";
+        case Polyphony: return "Polyphony";
+        case CaptureTiming: return "Capture Timing";
+        case TimingQuantize: return "Timing Quantize";
         case Last:      break;
         }
         return nullptr;
@@ -135,6 +141,15 @@ private:
         case NoteProbabilityBias:
             _track->printNoteProbabilityBias(str);
             break;
+        case Polyphony:
+            _track->printPolyphony(str);
+            break;
+        case CaptureTiming:
+            _track->printCaptureTiming(str);
+            break;
+        case TimingQuantize:
+            _track->printTimingQuantize(str);
+            break;
         case Last:
             break;
         }
@@ -177,6 +192,15 @@ private:
             break;
         case NoteProbabilityBias:
             _track->editNoteProbabilityBias(value, shift);
+            break;
+        case Polyphony:
+            _track->editPolyphony(value, shift);
+            break;
+        case CaptureTiming:
+            _track->editCaptureTiming(value, shift);
+            break;
+        case TimingQuantize:
+            _track->editTimingQuantize(value, shift);
             break;
         case Last:
             break;

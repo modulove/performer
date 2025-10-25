@@ -6,11 +6,11 @@ set(sources
     # engine
     engine/ArpeggiatorEngine.cpp
     engine/Clock.cpp
-    engine/CurveTrackEngine.cpp
+    # engine/CurveTrackEngine.cpp  # DISABLED - removed for memory
     engine/CvInput.cpp
     engine/CvOutput.cpp
     engine/Engine.cpp
-    engine/MidiCvTrackEngine.cpp
+    # engine/MidiCvTrackEngine.cpp  # DISABLED - removed for memory
     engine/MidiLearn.cpp
     engine/MidiOutputEngine.cpp
     engine/NoteTrackEngine.cpp
@@ -29,10 +29,11 @@ set(sources
     model/ClipBoard.cpp
     model/ClockSetup.cpp
     model/Curve.cpp
-    model/CurveSequence.cpp
-    model/CurveTrack.cpp
+    # model/CurveSequence.cpp  # DISABLED - removed for memory
+    # model/CurveTrack.cpp  # DISABLED - removed for memory
     model/FileManager.cpp
-    model/MidiCvTrack.cpp
+    # model/FlashPatternStorage.cpp  # DISABLED - causes runtime crashes
+    # model/MidiCvTrack.cpp  # DISABLED - removed for memory
     model/MidiOutput.cpp
     model/Model.cpp
     model/ModelUtils.cpp
@@ -72,8 +73,8 @@ set(sources
     ui/pages/ClockSetupPage.cpp
     ui/pages/ConfirmationPage.cpp
     ui/pages/ContextMenuPage.cpp
-    ui/pages/CurveSequenceEditPage.cpp
-    ui/pages/CurveSequencePage.cpp
+    # ui/pages/CurveSequenceEditPage.cpp  # DISABLED - removed for memory
+    # ui/pages/CurveSequencePage.cpp  # DISABLED - removed for memory
     ui/pages/FileSelectPage.cpp
     ui/pages/GeneratorPage.cpp
     ui/pages/GeneratorSelectPage.cpp
@@ -81,6 +82,7 @@ set(sources
     ui/pages/LayoutPage.cpp
     ui/pages/ListPage.cpp
     ui/pages/MidiOutputPage.cpp
+    ui/pages/ModulatorPage.cpp
     ui/pages/MonitorPage.cpp
     ui/pages/NoteSequenceEditPage.cpp
     ui/pages/NoteSequencePage.cpp

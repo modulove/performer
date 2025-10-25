@@ -260,6 +260,55 @@ public:
         str("%+.1f%%", noteProbabilityBias() * 12.5f);
     }
 
+    // polyphony - single-track polyphonic voices (MIDI only)
+
+    int polyphony() const { return _polyphony; }
+    void setPolyphony(int polyphony) {
+        _polyphony = clamp(polyphony, 0, 4);  // 0 = mono, 1-4 = poly voices
+    }
+
+    void editPolyphony(int value, bool shift) {
+        setPolyphony(polyphony() + value);
+    }
+
+    void printPolyphony(StringBuilder &str) const {
+        if (_polyphony == 0) {
+            str("Mono");
+        } else {
+            str("%d Voice%s", _polyphony, _polyphony > 1 ? "s" : "");
+        }
+    }
+
+    // captureTiming - enable micro-timing capture during recording
+
+    bool captureTiming() const { return _captureTiming; }
+    void setCaptureTiming(bool captureTiming) {
+        _captureTiming = captureTiming;
+    }
+
+    void editCaptureTiming(int value, bool shift) {
+        setCaptureTiming(!captureTiming());
+    }
+
+    void printCaptureTiming(StringBuilder &str) const {
+        str(captureTiming() ? "On" : "Off");
+    }
+
+    // timingQuantize (0-100%, timing quantization strength)
+
+    int timingQuantize() const { return _timingQuantize; }
+    void setTimingQuantize(int quantize) {
+        _timingQuantize = clamp(quantize, 0, 100);
+    }
+
+    void editTimingQuantize(int value, bool shift) {
+        setTimingQuantize(_timingQuantize + value * (shift ? 1 : 5));
+    }
+
+    void printTimingQuantize(StringBuilder &str) const {
+        str("%d%%", _timingQuantize);
+    }
+
     // sequences
 
     const NoteSequenceArray &sequences() const { return _sequences; }
@@ -308,6 +357,9 @@ private:
     Routable<int8_t> _retriggerProbabilityBias;
     Routable<int8_t> _lengthBias;
     Routable<int8_t> _noteProbabilityBias;
+    uint8_t _polyphony = 0;  // 0 = mono, 1-4 = polyphonic voices (MIDI only)
+    bool _captureTiming = false;  // Enable micro-timing capture during recording
+    uint8_t _timingQuantize = 50;  // 0-100% timing quantization strength (50% default)
 
     NoteSequenceArray _sequences;
 

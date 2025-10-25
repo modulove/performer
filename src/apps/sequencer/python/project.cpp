@@ -88,7 +88,9 @@ void register_project(py::module &m) {
         .def_property("selectedTrackIndex", &Project::selectedTrackIndex, &Project::setSelectedTrackIndex)
         .def_property("selectedPatternIndex", &Project::selectedPatternIndex, &Project::setSelectedPatternIndex)
         .def_property("selectedNoteSequenceLayer", &Project::selectedNoteSequenceLayer, &Project::setSelectedNoteSequenceLayer)
+#if CONFIG_ENABLE_CURVE_TRACKS
         .def_property("selectedCurveSequenceLayer", &Project::selectedCurveSequenceLayer, &Project::setSelectedCurveSequenceLayer)
+#endif
         .def("clear", &Project::clear)
         .def("clearPattern", &Project::clearPattern, "patternIndex"_a)
         .def("setTrackMode", &Project::setTrackMode, "trackIndex"_a, "trackMode"_a)
@@ -254,8 +256,12 @@ void register_project(py::module &m) {
         .def_property_readonly("trackMode", &Track::trackMode)
         .def_property("linkTrack", &Track::linkTrack, &Track::setLinkTrack)
         .def_property_readonly("noteTrack", [] (Track &track) { return &track.noteTrack(); })
+#if CONFIG_ENABLE_CURVE_TRACKS
         .def_property_readonly("curveTrack", [] (Track &track) { return &track.curveTrack(); })
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
         .def_property_readonly("midiCvTrack", [] (Track &track) { return &track.midiCvTrack(); })
+#endif
         .def("clear", &Track::clear)
         .def("clearPattern", &Track::clearPattern, "patternIndex"_a)
         .def("copyPattern", &Track::copyPattern, "srcIndex"_a, "dstIndex"_a)
@@ -263,8 +269,12 @@ void register_project(py::module &m) {
 
     py::enum_<Track::TrackMode>(track, "TrackMode")
         .value("Note", Track::TrackMode::Note)
+#if CONFIG_ENABLE_CURVE_TRACKS
         .value("Curve", Track::TrackMode::Curve)
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
         .value("MidiCv", Track::TrackMode::MidiCv)
+#endif
         .export_values()
     ;
 
@@ -313,6 +323,7 @@ void register_project(py::module &m) {
     // CurveTrack
     // ------------------------------------------------------------------------
 
+#if CONFIG_ENABLE_CURVE_TRACKS
     py::class_<CurveTrack> curveTrack(m, "CurveTrack");
     curveTrack
         .def_property("playMode", &CurveTrack::playMode, &CurveTrack::setPlayMode)
@@ -348,12 +359,14 @@ void register_project(py::module &m) {
         .value("Max", CurveTrack::MuteMode::Max)
         .export_values()
     ;
+#endif
 
 
     // ------------------------------------------------------------------------
     // MidiCvTrack
     // ------------------------------------------------------------------------
 
+#if CONFIG_ENABLE_MIDICV_TRACKS
     py::class_<MidiCvTrack> midiCvTrack(m, "MidiCvTrack");
     midiCvTrack
         .def_property_readonly("source", [] (MidiCvTrack &midiCvTrack) { return &midiCvTrack.source(); })
@@ -385,6 +398,7 @@ void register_project(py::module &m) {
         .value("HighestNote", MidiCvTrack::NotePriority::HighestNote)
         .export_values()
     ;
+#endif
 
     // ------------------------------------------------------------------------
     // Arpeggiator
@@ -480,6 +494,7 @@ void register_project(py::module &m) {
     // CurveSequence
     // ------------------------------------------------------------------------
 
+#if CONFIG_ENABLE_CURVE_TRACKS
     py::class_<CurveSequence> curveSequence(m, "CurveSequence");
     curveSequence
         .def_property("range", &CurveSequence::range, &CurveSequence::setRange)
@@ -523,6 +538,7 @@ void register_project(py::module &m) {
         .def_property("gateProbability", &CurveSequence::Step::gateProbability, &CurveSequence::Step::setGateProbability)
         .def("clear", &CurveSequence::Step::clear)
     ;
+#endif
 
     // ------------------------------------------------------------------------
     // Song

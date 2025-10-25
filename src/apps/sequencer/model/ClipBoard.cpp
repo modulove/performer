@@ -31,6 +31,7 @@ void ClipBoard::copyNoteSequenceSteps(const NoteSequence &noteSequence, const Se
     noteSequenceSteps.selected = selectedSteps;
 }
 
+#if CONFIG_ENABLE_CURVE_TRACKS
 void ClipBoard::copyCurveSequence(const CurveSequence &curveSequence) {
     _type = Type::CurveSequence;
     _container.as<CurveSequence>() = curveSequence;
@@ -42,6 +43,7 @@ void ClipBoard::copyCurveSequenceSteps(const CurveSequence &curveSequence, const
     curveSequenceSteps.sequence = curveSequence;
     curveSequenceSteps.selected = selectedSteps;
 }
+#endif
 
 void ClipBoard::copyPattern(int patternIndex) {
     _type = Type::Pattern;
@@ -53,9 +55,11 @@ void ClipBoard::copyPattern(int patternIndex) {
         case Track::TrackMode::Note:
             pattern.sequences[trackIndex].data.note = track.noteTrack().sequence(patternIndex);
             break;
+#if CONFIG_ENABLE_CURVE_TRACKS
         case Track::TrackMode::Curve:
             pattern.sequences[trackIndex].data.curve = track.curveTrack().sequence(patternIndex);
             break;
+#endif
         default:
             break;
         }
@@ -89,6 +93,7 @@ void ClipBoard::pasteNoteSequenceSteps(NoteSequence &noteSequence, const Selecte
     }
 }
 
+#if CONFIG_ENABLE_CURVE_TRACKS
 void ClipBoard::pasteCurveSequence(CurveSequence &curveSequence) const {
     if (canPasteCurveSequence()) {
         Model::WriteLock lock;
@@ -102,6 +107,7 @@ void ClipBoard::pasteCurveSequenceSteps(CurveSequence &curveSequence, const Sele
         ModelUtils::copySteps(curveSequenceSteps.sequence.steps(), curveSequenceSteps.selected, curveSequence.steps(), selectedSteps);
     }
 }
+#endif
 
 void ClipBoard::pastePattern(int patternIndex) const {
     if (canPastePattern()) {
@@ -114,9 +120,11 @@ void ClipBoard::pastePattern(int patternIndex) const {
                 case Track::TrackMode::Note:
                     track.noteTrack().sequence(patternIndex) = pattern.sequences[trackIndex].data.note;
                     break;
+#if CONFIG_ENABLE_CURVE_TRACKS
                 case Track::TrackMode::Curve:
                     track.curveTrack().sequence(patternIndex) = pattern.sequences[trackIndex].data.curve;
                     break;
+#endif
                 default:
                     break;
                 }

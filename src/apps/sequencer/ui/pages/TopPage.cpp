@@ -6,6 +6,7 @@
 #include "ui/model/CurveSequenceListModel.h"
 
 #include "ui/LedPainter.h"
+#include "os/os.h"
 
 TopPage::TopPage(PageManager &manager, PageContext &context) :
     BasePage(manager, context)
@@ -90,8 +91,33 @@ void TopPage::keyPress(KeyPressEvent &event) {
     auto &pages = _manager.pages();
     const auto &key = event.key();
 
+    // Page+Right: Toggle track bank
+    if (key.pageModifier() && key.isRight()) {
+        _trackBank = 1 - _trackBank;  // Toggle between 0 and 1
+        event.consume();
+        return;
+    }
+
     if (key.isTrackSelect()) {
-        _project.setSelectedTrackIndex(key.trackSelect());
+        int trackButton = key.trackSelect();  // Returns 0-7
+        int targetTrack = (_trackBank * 8) + trackButton;
+
+        // Double-tap detection: Toggle between track N and track N+8
+        uint32_t now = os::ticks();
+        uint32_t doubleTapWindow = os::time::ms(400);  // 400ms window
+
+        if (_lastTrackPressed == trackButton &&
+            (now - _lastTrackPressTime[trackButton]) < doubleTapWindow) {
+            // Double tap detected - toggle to opposite bank's same button
+            targetTrack = ((1 - _trackBank) * 8) + trackButton;
+            _trackBank = 1 - _trackBank;  // Switch bank
+            _lastTrackPressed = -1;  // Reset to avoid triple-tap
+        } else {
+            _lastTrackPressed = trackButton;
+            _lastTrackPressTime[trackButton] = now;
+        }
+
+        _project.setSelectedTrackIndex(targetTrack);
         event.consume();
     }
     if (key.isTrack() && event.count() == 2) {
@@ -191,6 +217,9 @@ void TopPage::setMode(Mode mode) {
     case Mode::UserScale:
         setMainPage(pages.userScale);
         break;
+    case Mode::Modulator:
+        setMainPage(pages.modulator);
+        break;
     case Mode::Monitor:
         setMainPage(pages.monitor);
         break;
@@ -227,12 +256,16 @@ void TopPage::setSequencePage() {
     case Track::TrackMode::Note:
         setMainPage(pages.noteSequence);
         break;
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve:
         setMainPage(pages.curveSequence);
         break;
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
     case Track::TrackMode::MidiCv:
         setMainPage(pages.track);
         break;
+#endif
     case Track::TrackMode::Last:
         break;
     }
@@ -245,12 +278,16 @@ void TopPage::setSequenceEditPage() {
     case Track::TrackMode::Note:
         setMainPage(pages.noteSequenceEdit);
         break;
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve:
         setMainPage(pages.curveSequenceEdit);
         break;
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
     case Track::TrackMode::MidiCv:
         setMainPage(pages.track);
         break;
+#endif
     case Track::TrackMode::Last:
         break;
     }

@@ -34,9 +34,9 @@ void StartupPage::draw(Canvas &canvas) {
     canvas.setColor(Color::Bright);
 
     canvas.setFont(Font::Small);
-    canvas.drawTextCentered(0, 0, Width, 32, "PEW|FORMER");
+    canvas.drawTextCentered(0, 0, Width, 32, "POW|FORMER");
     canvas.setFont(Font::Tiny);
-    canvas.drawTextCentered(0, 20, Width, 8, "from Phazerville with Love");
+    canvas.drawTextCentered(0, 20, Width, 8, "Modulove Artificial FW");
 
     canvas.setFont(Font::Tiny);
     canvas.drawTextCentered(0, 32, Width, 32, "LOADING ...");

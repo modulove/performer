@@ -61,6 +61,7 @@ static const LayerMapItem noteSequenceLayerMap[] = {
 
 static constexpr int noteSequenceLayerMapSize = sizeof(noteSequenceLayerMap) / sizeof(noteSequenceLayerMap[0]);
 
+#if CONFIG_ENABLE_CURVE_TRACKS
 static const LayerMapItem curveSequenceLayerMap[] = {
     [int(CurveSequence::Layer::Shape)]                      =  { 0, 0 },
     [int(CurveSequence::Layer::ShapeVariation)]             =  { 1, 0 },
@@ -72,6 +73,7 @@ static const LayerMapItem curveSequenceLayerMap[] = {
 };
 
 static constexpr int curveSequenceLayerMapSize = sizeof(curveSequenceLayerMap) / sizeof(curveSequenceLayerMap[0]);
+#endif
 
 struct RangeMap {
     int16_t min[2];
@@ -84,6 +86,7 @@ struct RangeMap {
     }
 };
 
+#if CONFIG_ENABLE_CURVE_TRACKS
 static const RangeMap curveMinMaxRangeMap = { { 0, 0 }, { 255, 7 } };
 
 static const RangeMap *curveSequenceLayerRangeMap[] = {
@@ -95,6 +98,7 @@ static const RangeMap *curveSequenceLayerRangeMap[] = {
     [int(CurveSequence::Layer::Gate)]                       = nullptr,
     [int(CurveSequence::Layer::GateProbability)]            = nullptr,
 };
+#endif
 
 LaunchpadController::LaunchpadController(ControllerManager &manager, Model &model, Engine &engine, const ControllerInfo &info) :
     Controller(manager, model, engine),
@@ -312,6 +316,7 @@ void LaunchpadController::sequenceUpdateNavigation() {
 
         break;
     }
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve: {
         _sequence.navigation.left = 0;
         _sequence.navigation.right = 7;
@@ -326,6 +331,7 @@ void LaunchpadController::sequenceUpdateNavigation() {
         _sequence.navigation.bottom = (range.min - 7) / 8;
         break;
     }
+#endif
     default:
         break;
     }
@@ -343,6 +349,7 @@ void LaunchpadController::sequenceSetLayer(int row, int col) {
         }
         break;
     }
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve: {
         for (int i = 0; i < curveSequenceLayerMapSize; ++i) {
             const auto &item = curveSequenceLayerMap[i];
@@ -353,6 +360,7 @@ void LaunchpadController::sequenceSetLayer(int row, int col) {
         }
         break;
     }
+#endif
     default:
         break;
     }
@@ -363,9 +371,11 @@ void LaunchpadController::sequenceSetFirstStep(int step) {
     case Track::TrackMode::Note:
         _project.selectedNoteSequence().setFirstStep(step);
         break;
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve:
         _project.selectedCurveSequence().setFirstStep(step);
         break;
+#endif
     default:
         break;
     }
@@ -376,9 +386,11 @@ void LaunchpadController::sequenceSetLastStep(int step) {
     case Track::TrackMode::Note:
         _project.selectedNoteSequence().setLastStep(step);
         break;
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve:
         _project.selectedCurveSequence().setLastStep(step);
         break;
+#endif
     default:
         break;
     }
@@ -389,9 +401,11 @@ void LaunchpadController::sequenceSetRunMode(int mode) {
     case Track::TrackMode::Note:
         _project.selectedNoteSequence().setRunMode(Types::RunMode(mode));
         break;
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve:
         _project.selectedCurveSequence().setRunMode(Types::RunMode(mode));
         break;
+#endif
     default:
         break;
     }
@@ -428,9 +442,11 @@ void LaunchpadController::sequenceEditStep(int row, int col) {
     case Track::TrackMode::Note:
         sequenceEditNoteStep(row, col);
         break;
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve:
         sequenceEditCurveStep(row, col);
         break;
+#endif
     default:
         break;
     }
@@ -457,6 +473,7 @@ void LaunchpadController::sequenceEditNoteStep(int row, int col) {
     }
 }
 
+#if CONFIG_ENABLE_CURVE_TRACKS
 void LaunchpadController::sequenceEditCurveStep(int row, int col) {
     auto &sequence = _project.selectedCurveSequence();
     auto layer = _project.selectedCurveSequenceLayer();
@@ -470,6 +487,7 @@ void LaunchpadController::sequenceEditCurveStep(int row, int col) {
 
     sequence.step(linearIndex).setLayerValue(layer, value);
 }
+#endif
 
 void LaunchpadController::sequenceDrawLayer() {
     switch (_project.selectedTrack().trackMode()) {
@@ -480,6 +498,7 @@ void LaunchpadController::sequenceDrawLayer() {
             setGridLed(item.row, item.col, selected ? colorYellow() : colorGreen());
         }
         break;
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve:
         for (int i = 0; i < curveSequenceLayerMapSize; ++i) {
             const auto &item = curveSequenceLayerMap[i];
@@ -487,6 +506,7 @@ void LaunchpadController::sequenceDrawLayer() {
             setGridLed(item.row, item.col, selected ? colorYellow() : colorGreen());
         }
         break;
+#endif
     default:
         break;
     }
@@ -499,11 +519,13 @@ void LaunchpadController::sequenceDrawStepRange(int highlight) {
         drawRange(sequence.firstStep(), sequence.lastStep(), highlight == 0 ? sequence.firstStep() : sequence.lastStep());
         break;
     }
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve: {
         const auto &sequence = _project.selectedCurveSequence();
         drawRange(sequence.firstStep(), sequence.lastStep(), highlight == 0 ? sequence.firstStep() : sequence.lastStep());
         break;
     }
+#endif
     default:
         break;
     }
@@ -515,10 +537,12 @@ void LaunchpadController::sequenceDrawRunMode() {
         drawEnum(_project.selectedNoteSequence().runMode());
         break;
     }
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve: {
         drawEnum(_project.selectedCurveSequence().runMode());
         break;
     }
+#endif
     default:
         break;
     }
@@ -529,9 +553,11 @@ void LaunchpadController::sequenceDrawSequence() {
     case Track::TrackMode::Note:
         sequenceDrawNoteSequence();
         break;
+#if CONFIG_ENABLE_CURVE_TRACKS
     case Track::TrackMode::Curve:
         sequenceDrawCurveSequence();
         break;
+#endif
     default:
         break;
     }
@@ -560,6 +586,7 @@ void LaunchpadController::sequenceDrawNoteSequence() {
     }
 }
 
+#if CONFIG_ENABLE_CURVE_TRACKS
 void LaunchpadController::sequenceDrawCurveSequence() {
     const auto &trackEngine = _engine.selectedTrackEngine().as<CurveTrackEngine>();
     const auto &sequence = _project.selectedCurveSequence();
@@ -582,6 +609,7 @@ void LaunchpadController::sequenceDrawCurveSequence() {
         break;
     }
 }
+#endif
 
 //----------------------------------------
 // Pattern mode
@@ -623,11 +651,13 @@ void LaunchpadController::patternDraw() {
                         setGridLed(row, trackIndex, colorYellow(1));
                     }
                     break;
+#if CONFIG_ENABLE_CURVE_TRACKS
                 case Track::TrackMode::Curve:
                     if (track.curveTrack().sequence(patternIndex).isEdited()) {
                         setGridLed(row, trackIndex, colorRed(1));
                     }
                     break;
+#endif
                 default:
                     break;
                 }
@@ -844,6 +874,7 @@ void LaunchpadController::drawNoteSequenceNotes(const NoteSequence &sequence, No
     }
 }
 
+#if CONFIG_ENABLE_CURVE_TRACKS
 void LaunchpadController::drawCurveSequenceBars(const CurveSequence &sequence, CurveSequence::Layer layer, int currentStep) {
     for (int col = 0; col < 8; ++col) {
         int stepIndex = col + _sequence.navigation.col * 8;
@@ -865,6 +896,7 @@ void LaunchpadController::drawCurveSequenceDots(const CurveSequence &sequence, C
         setGridLed((7 - value) + ofs, col, stepColor(true, stepIndex == currentStep));
     }
 }
+#endif
 
 void LaunchpadController::drawBar(int col, int value, bool active, bool current) {
     int ofs = _sequence.navigation.row * 8;

@@ -4,10 +4,10 @@
 
 // Version tag
 #define CONFIG_VERSION_MAGIC            0xfadebabe
-#define CONFIG_VERSION_NAME             "PEW|FORMER SEQUENCER"
+#define CONFIG_VERSION_NAME             "POW|FORMER SEQUENCER"
 #define CONFIG_VERSION_MAJOR            0
-#define CONFIG_VERSION_MINOR            5
-#define CONFIG_VERSION_REVISION         0
+#define CONFIG_VERSION_MINOR            0
+#define CONFIG_VERSION_REVISION         7
 
 // Task priorities
 #define CONFIG_DRIVER_TASK_PRIORITY     5
@@ -48,15 +48,18 @@
 #define CONFIG_CV_OUTPUT_CHANNELS       8
 
 // Model
-#define CONFIG_PATTERN_COUNT            16
+#define CONFIG_PATTERN_COUNT            8   // Back to original - 10 worked but user requested 8
 #define CONFIG_SNAPSHOT_COUNT           1
-#define CONFIG_SONG_SLOT_COUNT          64
-#define CONFIG_TRACK_COUNT              8
+#define CONFIG_SONG_SLOT_COUNT          4   // Reduced from 16 (not used)
+#define CONFIG_TRACK_COUNT              16
 #define CONFIG_STEP_COUNT               64
-#define CONFIG_ROUTE_COUNT              16
+#define CONFIG_ROUTE_COUNT              4   // Reduced from 16 (rarely used)
 #define CONFIG_MIDI_OUTPUT_COUNT        16
-#define CONFIG_USER_SCALE_COUNT         4
-#define CONFIG_USER_SCALE_SIZE          32
+#define CONFIG_USER_SCALE_COUNT         1   // Reduced from 4 (not used)
+#define CONFIG_USER_SCALE_SIZE          8   // Reduced from 32 (not used)
+#define CONFIG_MODULATOR_COUNT          8   // Independent LFO/Random modulators
+#define CONFIG_ENABLE_CURVE_TRACKS      0   // Disabled - removed for memory
+#define CONFIG_ENABLE_MIDICV_TRACKS     0   // Disabled - removed for memory
 
 
 #define CONFIG_ENABLE_ASTEROIDS

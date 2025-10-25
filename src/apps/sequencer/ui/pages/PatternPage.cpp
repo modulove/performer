@@ -8,6 +8,7 @@
 #include "model/PlayState.h"
 
 #include "core/utils/StringBuilder.h"
+#include "core/math/Math.h"
 
 enum class Function {
     Latch       = 0,
@@ -69,12 +70,16 @@ void PatternPage::draw(Canvas &canvas) {
     canvas.setFont(Font::Tiny);
     canvas.setBlendMode(BlendMode::Set);
 
-    for (int trackIndex = 0; trackIndex < CONFIG_TRACK_COUNT; ++trackIndex) {
+    // Determine which bank to show based on selected track
+    int trackOffset = (_project.selectedTrackIndex() >= 8) ? 8 : 0;
+
+    for (int i = 0; i < 8; ++i) {
+        int trackIndex = trackOffset + i;
         const auto &trackEngine = _engine.trackEngine(trackIndex);
         const auto &trackState = playState.trackState(trackIndex);
-        bool trackSelected = pageKeyState()[MatrixMap::fromTrack(trackIndex)];
+        bool trackSelected = pageKeyState()[MatrixMap::fromTrack(i)];
 
-        int x = trackIndex * 32;
+        int x = i * 32;
         int y = 16;
 
         int w = 28;
@@ -134,14 +139,18 @@ void PatternPage::updateLeds(Leds &leds) {
         uint16_t selectedActivePatterns = 0;
         uint16_t selectedRequestedPatterns = 0;
 
-        for (int trackIndex = 0; trackIndex < CONFIG_TRACK_COUNT; ++trackIndex) {
+        // Determine which bank to show based on selected track
+        int trackOffset = (_project.selectedTrackIndex() >= 8) ? 8 : 0;
+
+        for (int i = 0; i < 8; ++i) {
+            int trackIndex = trackOffset + i;
             const auto &trackState = playState.trackState(trackIndex);
             bool hasPatternRequest = trackState.hasPatternRequest();
             int pattern = trackState.pattern();
             int requestedPattern = trackState.requestedPattern();
             allActivePatterns |= (pattern < 16) ? (1<<pattern) : 0;
             allRequestedPatterns |= (hasPatternRequest && requestedPattern < 16) ? (1<<requestedPattern) : 0;
-            if (pageKeyState()[MatrixMap::fromTrack(trackIndex)]) {
+            if (pageKeyState()[MatrixMap::fromTrack(i)]) {
                 selectedActivePatterns |= (pattern < 16) ? (1<<pattern) : 0;
                 selectedRequestedPatterns |= (hasPatternRequest && requestedPattern < 16) ? (1<<requestedPattern) : 0;
             }
@@ -230,6 +239,26 @@ void PatternPage::keyPress(KeyPressEvent &event) {
         return;
     }
 
+    // Prev/Next: Switch between T1-8 and T9-16 banks
+    if (key.isLeft()) {
+        int currentTrack = _project.selectedTrackIndex();
+        if (currentTrack >= 8) {
+            // Bank 2 -> Bank 1
+            _project.setSelectedTrackIndex(currentTrack - 8);
+        }
+        event.consume();
+        return;
+    }
+    if (key.isRight()) {
+        int currentTrack = _project.selectedTrackIndex();
+        if (currentTrack < 8) {
+            // Bank 1 -> Bank 2
+            _project.setSelectedTrackIndex(currentTrack + 8);
+        }
+        event.consume();
+        return;
+    }
+
     if (key.isTrackSelect()) {
         event.consume();
     }
@@ -274,8 +303,11 @@ void PatternPage::keyPress(KeyPressEvent &event) {
             else executeType = PlayState::Immediate;
 
             bool globalChange = true;
-            for (int trackIndex = 0; trackIndex < CONFIG_TRACK_COUNT; ++trackIndex) {
-                if (pageKeyState()[MatrixMap::fromTrack(trackIndex)]) {
+            // Determine which bank to show based on selected track
+            int trackOffset = (_project.selectedTrackIndex() >= 8) ? 8 : 0;
+            for (int i = 0; i < 8; ++i) {
+                int trackIndex = trackOffset + i;
+                if (pageKeyState()[MatrixMap::fromTrack(i)]) {
                     playState.selectTrackPattern(trackIndex, pattern, executeType);
                     globalChange = false;
                 }
@@ -299,7 +331,24 @@ void PatternPage::keyPress(KeyPressEvent &event) {
 }
 
 void PatternPage::encoder(EncoderEvent &event) {
-    _project.editSelectedPatternIndex(event.value(), event.pressed());
+    auto &playState = _project.playState();
+
+    // UX-19: Hold track + encoder = change that track's pattern (performance feature!)
+    bool anyTrackHeld = false;
+    for (int track = 0; track < CONFIG_TRACK_COUNT; ++track) {
+        if (pageKeyState()[MatrixMap::fromTrack(track % 8)]) {
+            // Track button is held - change that track's pattern
+            int currentPattern = playState.trackState(track).pattern();
+            int newPattern = clamp(currentPattern + event.value(), 0, CONFIG_PATTERN_COUNT - 1);
+            playState.selectTrackPattern(track, newPattern, PlayState::Immediate);
+            anyTrackHeld = true;
+        }
+    }
+
+    // Default behavior: change edit pattern
+    if (!anyTrackHeld) {
+        _project.editSelectedPatternIndex(event.value(), event.pressed());
+    }
 }
 
 void PatternPage::contextShow() {
@@ -374,4 +423,10 @@ void PatternPage::sendMidiProgramSave() {
         _engine.sendMidiProgramSave(_project.playState().trackState(0).pattern());
         showMessage("SENT MIDI PROGRAM SAVE");
     }
+}
+
+int PatternPage::clamp(int value, int min, int max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
 }

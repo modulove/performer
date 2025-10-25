@@ -5,8 +5,12 @@
 #include "Serialize.h"
 #include "ModelUtils.h"
 #include "NoteTrack.h"
+#if CONFIG_ENABLE_CURVE_TRACKS
 #include "CurveTrack.h"
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
 #include "MidiCvTrack.h"
+#endif
 
 #include "core/Debug.h"
 #include "core/math/Math.h"
@@ -32,8 +36,12 @@ public:
 
     enum class TrackMode : uint8_t {
         Note,
+#if CONFIG_ENABLE_CURVE_TRACKS
         Curve,
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
         MidiCv,
+#endif
         Last,
         Default = Note
     };
@@ -41,8 +49,12 @@ public:
     static const char *trackModeName(TrackMode trackMode) {
         switch (trackMode) {
         case TrackMode::Note:   return "Note";
+#if CONFIG_ENABLE_CURVE_TRACKS
         case TrackMode::Curve:  return "Curve";
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
         case TrackMode::MidiCv: return "MIDI/CV";
+#endif
         case TrackMode::Last:   break;
         }
         return nullptr;
@@ -51,8 +63,12 @@ public:
     static uint8_t trackModeSerialize(TrackMode trackMode) {
         switch (trackMode) {
         case TrackMode::Note:   return 0;
+#if CONFIG_ENABLE_CURVE_TRACKS
         case TrackMode::Curve:  return 1;
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
         case TrackMode::MidiCv: return 2;
+#endif
         case TrackMode::Last:   break;
         }
         return 0;
@@ -100,14 +116,16 @@ public:
           NoteTrack &noteTrack()       { SANITIZE_TRACK_MODE(_trackMode, TrackMode::Note); return *_track.note; }
 
     // curveTrack
-
+#if CONFIG_ENABLE_CURVE_TRACKS
     const CurveTrack &curveTrack() const { SANITIZE_TRACK_MODE(_trackMode, TrackMode::Curve); return *_track.curve; }
           CurveTrack &curveTrack()       { SANITIZE_TRACK_MODE(_trackMode, TrackMode::Curve); return *_track.curve; }
+#endif
 
     // midiCvTrack
-
+#if CONFIG_ENABLE_MIDICV_TRACKS
     const MidiCvTrack &midiCvTrack() const { SANITIZE_TRACK_MODE(_trackMode, TrackMode::MidiCv); return *_track.midiCv; }
           MidiCvTrack &midiCvTrack()       { SANITIZE_TRACK_MODE(_trackMode, TrackMode::MidiCv); return *_track.midiCv; }
+#endif
 
     //----------------------------------------
     // Methods
@@ -155,11 +173,22 @@ private:
     TrackMode _trackMode;
     int8_t _linkTrack;
 
-    Container<NoteTrack, CurveTrack, MidiCvTrack> _container;
+    Container<NoteTrack
+#if CONFIG_ENABLE_CURVE_TRACKS
+              , CurveTrack
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
+              , MidiCvTrack
+#endif
+              > _container;
     union {
         NoteTrack *note;
+#if CONFIG_ENABLE_CURVE_TRACKS
         CurveTrack *curve;
+#endif
+#if CONFIG_ENABLE_MIDICV_TRACKS
         MidiCvTrack *midiCv;
+#endif
     } _track;
 
     friend class Project;

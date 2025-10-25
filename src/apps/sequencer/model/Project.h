@@ -11,6 +11,7 @@
 #include "UserScale.h"
 #include "Routing.h"
 #include "MidiOutput.h"
+#include "Modulator.h"
 #include "Serialize.h"
 #include "FileDefs.h"
 
@@ -29,6 +30,7 @@ public:
     using TrackArray = std::array<Track, CONFIG_TRACK_COUNT>;
     using CvOutputTrackArray = std::array<uint8_t, CONFIG_CHANNEL_COUNT>;
     using GateOutputArray = std::array<uint8_t, CONFIG_CHANNEL_COUNT>;
+    using ModulatorArray = std::array<Modulator, CONFIG_MODULATOR_COUNT>;
 
     Project();
 
@@ -373,6 +375,24 @@ public:
     const MidiOutput &midiOutput() const { return _midiOutput; }
           MidiOutput &midiOutput()       { return _midiOutput; }
 
+    // modulators
+
+    const ModulatorArray &modulators() const { return _modulators; }
+          ModulatorArray &modulators()       { return _modulators; }
+
+    const Modulator &modulator(int index) const { return _modulators[index]; }
+          Modulator &modulator(int index)       { return _modulators[index]; }
+
+    // selectedModulatorIndex
+
+    int selectedModulatorIndex() const { return _selectedModulatorIndex; }
+    void setSelectedModulatorIndex(int index) {
+        _selectedModulatorIndex = clamp(index, 0, CONFIG_MODULATOR_COUNT - 1);
+    }
+
+    const Modulator &selectedModulator() const { return _modulators[_selectedModulatorIndex]; }
+          Modulator &selectedModulator()       { return _modulators[_selectedModulatorIndex]; }
+
     // selectedTrackIndex
 
     int selectedTrackIndex() const { return _selectedTrackIndex; }
@@ -412,9 +432,10 @@ public:
     void setSelectedNoteSequenceLayer(NoteSequence::Layer layer) { _selectedNoteSequenceLayer = layer; }
 
     // selectedCurveSequenceLayer
-
+#if CONFIG_ENABLE_CURVE_TRACKS
     CurveSequence::Layer selectedCurveSequenceLayer() const { return _selectedCurveSequenceLayer; }
     void setSelectedCurveSequenceLayer(CurveSequence::Layer layer) { _selectedCurveSequenceLayer = layer; }
+#endif
 
     // selectedTrack
 
@@ -432,7 +453,7 @@ public:
           NoteSequence &selectedNoteSequence()       { return noteSequence(_selectedTrackIndex, selectedPatternIndex()); }
 
     // curveSequence
-
+#if CONFIG_ENABLE_CURVE_TRACKS
     const CurveSequence &curveSequence(int trackIndex, int patternIndex) const { return _tracks[trackIndex].curveTrack().sequence(patternIndex); }
           CurveSequence &curveSequence(int trackIndex, int patternIndex)       { return _tracks[trackIndex].curveTrack().sequence(patternIndex); }
 
@@ -440,6 +461,7 @@ public:
 
     const CurveSequence &selectedCurveSequence() const { return curveSequence(_selectedTrackIndex, selectedPatternIndex()); }
           CurveSequence &selectedCurveSequence()       { return curveSequence(_selectedTrackIndex, selectedPatternIndex()); }
+#endif
 
     //----------------------------------------
     // Routing
@@ -505,11 +527,15 @@ private:
     PlayState _playState;
     Routing _routing;
     MidiOutput _midiOutput;
+    ModulatorArray _modulators;
 
     int _selectedTrackIndex = 0;
     int _selectedPatternIndex = 0;
+    int _selectedModulatorIndex = 0;
     NoteSequence::Layer _selectedNoteSequenceLayer = NoteSequence::Layer(0);
+#if CONFIG_ENABLE_CURVE_TRACKS
     CurveSequence::Layer _selectedCurveSequenceLayer = CurveSequence::Layer(0);
+#endif
 
     Observable<Event, 2> _observable;
 };
