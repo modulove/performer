@@ -17,7 +17,7 @@ I hope with POW|FORMER I can do justice to your original vision and breathe some
 
 ## Executive Summary
 
-This release brings major UI/UX improvements focused on startup experience and visual polish. Building on extensive 16-track, modulator, and microtiming features from v0.0.50-0.0.62, this version refines the user interface with professionally converted SVG logo, enhanced visual feedback, and improved layouts.
+This release brings major UI/UX improvements focused on startup experience and visual polish. Building on extensive 16-track, modulator, and microtiming features from v0.0.50-0.0.62, this version refines the user interface with newly designed and converted SVG logo, enhanced visual feedback, and improved layouts.
 
 **Key Highlights**:
 - SVG-based startup logo (converted from PEW_FORMER_LOGO.svg)
@@ -26,7 +26,7 @@ This release brings major UI/UX improvements focused on startup experience and v
 - Fixed keyboard page (proper 2-octave: 14 white, 10 black keys)
 - Improved pattern number positioning
 - Dynamic two-column list layouts
-- Python SVG-to-code converter tool
+- Python SVG-to-code converter tool for implementing more UI later on
 
 ---
 
@@ -36,7 +36,7 @@ This release brings major UI/UX improvements focused on startup experience and v
 - **SVG Logo**: Converted 363×75 SVG to optimized 87×18px (45 rectangles)
 - **Space Invaders**: 6 animated invaders (3 per side, 16×16px) with odd/even bobbing
 - **Heart Symbols**: Enlarged 5×5 → 9×7 pixels with y-4 offset for text alignment
-- **Credits**: "WESTLICHT ❤️ MODULOVE ❤️ PHASERVILLE"
+- **Credits**: "WESTLICHT ♥︎ MODULOVE ♥︎ PHASERVILLE"
 
 ### Keyboard Page (KeyboardPage.cpp/h) - New
 - **Proper 2-octave layout**: 14 white keys, 10 black keys
@@ -128,7 +128,7 @@ v0.0.63     361028    6712    153404    521144
 
 ### westlicht/performer (Original)
 - 8-track sequencer
-- Core features all preserved in POW|FORMER
+- Note Track and Core features all preserved in POW|FORMER
 
 ### djphazer/performer (PEW|FORMER)
 - Updated toolchain (gcc 14.2)
@@ -136,15 +136,15 @@ v0.0.63     361028    6712    153404    521144
 - CI workflow
 
 ### modulove/performer (POW|FORMER) - Unique
-- ⭐ 16-track system
-- ⭐ 8 LFO modulators
-- ⭐ Microtiming recording
-- ⭐ Custom startup screen
-- ⭐ Keyboard page
-- ⭐ Enhanced performer page
+- 16-track system
+- 8 LFO modulators
+- Microtiming recording
+- Custom startup screen
+- Keyboard page
+- Enhanced performer page
 
 ### Features Removed: None
-All core functionality preserved. Only limitations: 8 patterns/track (was 16) due to memory for 16 tracks.
+All core functionality preserved with note tracks. Limitations: 8 patterns/track (was 16) due to memory for 16 tracks. Curve track and midi/cv track disabled also to save space and test other ideas.
 
 ---
 
