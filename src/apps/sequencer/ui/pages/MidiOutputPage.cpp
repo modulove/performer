@@ -100,6 +100,8 @@ void MidiOutputPage::updateLeds(Leds &leds) {
 void MidiOutputPage::keyPress(KeyPressEvent &event) {
     const auto &key = event.key();
 
+    // Shift+Page removed - use ModulatorPage routing overlay instead
+
     // Step buttons (0-15) select MIDI output
     if (key.isStep() && key.step() < 16) {
         selectOutput(key.step());
@@ -158,6 +160,43 @@ void MidiOutputPage::selectOutput(int outputIndex) {
     if (outputIndex != _selectedOutput) {
         showOutput(outputIndex);
     }
+}
+
+void MidiOutputPage::applyComprehensivePreset() {
+    // Simplified MIDI preset:
+    // OUT 1-8: Target MIDI 1-8, Gate T9-T16, Note mode, Velocity 127
+    // OUT 9-16: Leave untouched
+
+    // Suspend engine to safely modify MIDI outputs
+    _engine.suspend();
+
+    // Configure outputs 1-8: Tracks 9-16 as Note
+    for (int i = 0; i < 8; ++i) {
+        auto &output = _project.midiOutput().output(i);
+
+        // Set event to Note (force=true to ensure clean reset)
+        output.setEvent(MidiOutput::Output::Event::Note, true);
+
+        // Set sources to tracks 9-16 (indices 8-15)
+        int trackIndex = i + 8;
+        output.setGateSource(MidiOutput::Output::GateSource(
+            int(MidiOutput::Output::GateSource::FirstTrack) + trackIndex));
+        output.setNoteSource(MidiOutput::Output::NoteSource(
+            int(MidiOutput::Output::NoteSource::FirstTrack) + trackIndex));
+
+        // Set velocity to fixed 127
+        output.setVelocitySource(MidiOutput::Output::VelocitySource(
+            int(MidiOutput::Output::VelocitySource::FirstVelocity) + 127));
+
+        // Set target to MIDI port, channel 1-8 (index 0-7)
+        output.target().setPort(Types::MidiPort::Midi);
+        output.target().setChannel(i);
+    }
+
+    // Resume engine after modifications
+    _engine.resume();
+
+    showMessage("Preset: T9-16→MIDI1-8 Note", 2500);
 }
 
 void MidiOutputPage::setSelectedFunction(Function function) {

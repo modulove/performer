@@ -25,6 +25,7 @@ enum Color {
 enum class Font {
     Tiny,
     Small,
+    Miracode,
     Default = Tiny,
 };
 

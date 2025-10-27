@@ -136,8 +136,20 @@ void TopPage::keyPress(KeyPressEvent &event) {
             event.consume();
         }
         if (key.isPerformer() && _mode != Mode::Performer) {
-            pages.performer.setModal(true);
-            pages.performer.show();
+            // Double-tap detection for keyboard mode
+            uint32_t now = os::ticks();
+            uint32_t doubleTapWindow = os::time::ms(400);  // 400ms window
+
+            if ((now - _lastPerformerPressTime) < doubleTapWindow) {
+                // Double tap detected - open keyboard page
+                pages.keyboard.show();
+                _lastPerformerPressTime = 0;  // Reset to avoid triple-tap
+            } else {
+                // Single tap - open performer page
+                pages.performer.setModal(true);
+                pages.performer.show();
+                _lastPerformerPressTime = now;
+            }
             event.consume();
         }
     }

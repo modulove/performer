@@ -23,7 +23,6 @@ public:
 
 private:
     void updateFills();
-    int clamp(int value, int min, int max);
 
     bool _modal = false;
     bool _latching = false;

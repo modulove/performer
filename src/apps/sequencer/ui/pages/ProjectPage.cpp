@@ -58,10 +58,15 @@ void ProjectPage::keyPress(KeyPressEvent &event) {
     }
 
     if (key.pageModifier()) {
-        // easter egg
+        // easter eggs
         if (key.is(Key::Step15)) {
             _manager.pages().asteroids.show();
         }
+#ifdef CONFIG_ENABLE_SPACEINVADERS
+        if (key.is(Key::Step14)) {
+            _manager.pages().spaceinvaders.show();
+        }
+#endif
         return;
     }
 

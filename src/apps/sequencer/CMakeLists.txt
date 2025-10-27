@@ -3,6 +3,8 @@ set(update_file "UPDATE.DAT")
 set(sources
     # asteroids
     asteroids/Asteroids.cpp
+    # spaceinvaders
+    spaceinvaders/SpaceInvaders.cpp
     # engine
     engine/ArpeggiatorEngine.cpp
     engine/Clock.cpp
@@ -68,6 +70,7 @@ set(sources
     ui/controllers/launchpad/LaunchpadProMk3Device.cpp
     # ui/pages
     ui/pages/AsteroidsPage.cpp
+    ui/pages/SpaceInvadersPage.cpp
     ui/pages/BasePage.cpp
     ui/pages/BusyPage.cpp
     ui/pages/ClockSetupPage.cpp
@@ -79,6 +82,7 @@ set(sources
     ui/pages/GeneratorPage.cpp
     ui/pages/GeneratorSelectPage.cpp
     ui/pages/IntroPage.cpp
+    ui/pages/KeyboardPage.cpp
     ui/pages/LayoutPage.cpp
     ui/pages/ListPage.cpp
     ui/pages/MidiOutputPage.cpp

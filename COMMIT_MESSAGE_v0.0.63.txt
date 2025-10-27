@@ -1,0 +1,56 @@
+feat: SVG logo, keyboard page, UI polish (v0.0.63)
+
+A heartfelt thank you to westlicht for creating PER|FORMER - it has been an integral
+part of my modular system for years! I hope POW|FORMER does justice to the original
+vision and breathes fresh life into this incredible sequencer.
+
+Major UI/UX improvements focused on startup experience and visual refinement.
+
+## Startup Screen Redesign
+- Convert PEW_FORMER_LOGO.svg to efficient fillRect() code (87×18px, 45 rectangles)
+- Add 6 animated space invaders (16×16px) with odd/even bobbing motion
+- Enlarge heart symbols to 9×7px (was 5×5) with proper text alignment (y-4 offset)
+- Create svg_to_logo_converter.py tool for designer→code workflow with ASCII preview
+
+## Keyboard Page (New)
+- Implement proper 2-octave piano layout (14 white keys, 10 black keys)
+- Black key positions: [1, 2, 4, 5, 6, 8, 9, 11, 12, 13] (no keys after E or B)
+- Add persistent last-note-played display
+- Relocate track/root/octave info to bottom of window
+- Increase key sizes by 3px for better touch targets
+
+## Layout Improvements
+- Fix pattern number positioning (y+7 for proper height - subtract moves UP)
+- Implement dynamic two-column list sizing with content-aware width calculation
+- Add Canvas.textWidth() method for precise layout measurements
+- Improve visual hierarchy across all list-based pages
+
+## Technical Details
+- Memory: 361028 bytes text (+776 from base v0.0.50, -384 from v0.0.62)
+- Files: 38 changed, +1865 insertions, -398 deletions
+- Major changes:
+  - StartupPage.cpp: +395 lines (SVG logo, space invaders, hearts)
+  - KeyboardPage.cpp/h: New files (2-octave piano implementation)
+  - ListPage.cpp: +43 lines (dynamic column sizing)
+  - Canvas.cpp/h: +23 lines (textWidth() method)
+
+## Build System
+- Creates svg_to_logo_converter.py for SVG→C++ conversion
+- Generates UPDATE.DAT → ~/Desktop/UPDATE_16TRACKS_MINIMAL.DAT
+- Build script: ~/build-performer.sh
+
+Built upon PEW|FORMER (djphazer/performer) with 16-track support, 8 LFO modulators,
+and microtiming recording from commits 84ec511 and earlier.
+
+Includes jackpf's improvements integrated via Phazerville fork:
+- Noise reduction algorithms
+- Shape improvements
+- Enhanced MIDI implementation
+
+⚠️ EXPERIMENTAL: Community testing welcome! Many new features need validation.
+Please test thoroughly and report issues.
+
+Changelog: See CHANGELOG_v0.0.63.md for full details.
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>

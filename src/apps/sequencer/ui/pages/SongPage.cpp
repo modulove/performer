@@ -62,7 +62,7 @@ void SongPage::draw(Canvas &canvas) {
     const char *colHeader[] = { "#", "N", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8" };
     const int rowHeight = 8;
     const int tableOriginX = 60;
-    const int tableOriginY = 11;
+    const int tableOriginY = 9;  // Raised by 2px
 
     int y = tableOriginY;
 

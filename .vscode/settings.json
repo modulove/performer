@@ -19,6 +19,7 @@
         "regex": "cpp",
         "string": "cpp",
         "algorithm": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "array": "cpp"
     }
 }

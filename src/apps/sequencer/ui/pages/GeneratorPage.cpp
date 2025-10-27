@@ -131,6 +131,21 @@ void GeneratorPage::keyPress(KeyPressEvent &event) {
         return;
     }
 
+    // Toggle function buttons (F0-F4)
+    if (key.isFunction()) {
+        int funcIndex = key.function();
+        if (funcIndex < _generator->paramCount()) {
+            // Toggle: if already active, deactivate; otherwise activate this function
+            if (_activeFunction == funcIndex) {
+                _activeFunction = -1;  // Deactivate
+            } else {
+                _activeFunction = funcIndex;  // Activate this function
+            }
+        }
+        event.consume();
+        return;
+    }
+
     if (key.isGlobal()) {
         return;
     }
@@ -163,10 +178,17 @@ void GeneratorPage::keyPress(KeyPressEvent &event) {
 void GeneratorPage::encoder(EncoderEvent &event) {
     bool changed = false;
 
-    for (int i = 0; i < _generator->paramCount(); ++i) {
-        if (pageKeyState()[Key::F0 + i]) {
-            _generator->editParam(i, event.value(), event.pressed());
-            changed = true;
+    // Use active function if set (toggle mode), otherwise check held buttons
+    if (_activeFunction >= 0 && _activeFunction < _generator->paramCount()) {
+        _generator->editParam(_activeFunction, event.value(), event.pressed());
+        changed = true;
+    } else {
+        // Fallback to original behavior if no function is toggled
+        for (int i = 0; i < _generator->paramCount(); ++i) {
+            if (pageKeyState()[Key::F0 + i]) {
+                _generator->editParam(i, event.value(), event.pressed());
+                changed = true;
+            }
         }
     }
 
@@ -179,19 +201,34 @@ void GeneratorPage::drawEuclideanGenerator(Canvas &canvas, const EuclideanGenera
     auto steps = generator.steps();
     const auto &pattern = generator.pattern();
 
-    int stepWidth = Width / steps;
-    int stepHeight = 8;
-    int x = (Width - steps * stepWidth) / 2;
-    int y = Height / 2 - stepHeight / 2;
+    // Use two rows if more than 16 steps
+    int rowCount = (steps > 16) ? 2 : 1;
+    int stepsPerRow = (rowCount == 2) ? ((steps + 1) / 2) : steps;
+
+    // Larger step boxes (12px high like step-edit mode)
+    int stepHeight = 12;
+    int stepWidth = Width / stepsPerRow;
+    int rowGap = 3;  // Vertical spacing between rows
+
+    // Center vertically in available space
+    int totalHeight = (rowCount * stepHeight) + ((rowCount - 1) * rowGap);
+    int startY = (Height - totalHeight) / 2;
 
     for (int i = 0; i < steps; ++i) {
+        // Calculate which row and position within row
+        int row = (rowCount == 2 && i >= stepsPerRow) ? 1 : 0;
+        int col = (row == 0) ? i : (i - stepsPerRow);
+
+        int x = (Width - stepsPerRow * stepWidth) / 2 + col * stepWidth;
+        int y = startY + row * (stepHeight + rowGap);
+
+        // Draw step box (larger, like step-edit mode)
         canvas.setColor(Color::Medium);
         canvas.drawRect(x + 1, y + 1, stepWidth - 2, stepHeight - 2);
         if (pattern[i]) {
             canvas.setColor(Color::Bright);
-            canvas.fillRect(x + 1, y + 1, stepWidth - 2, stepHeight - 2);
+            canvas.fillRect(x + 2, y + 2, stepWidth - 4, stepHeight - 4);
         }
-        x += stepWidth;
     }
 }
 

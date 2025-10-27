@@ -481,7 +481,19 @@ void Engine::updateTrackOutputs() {
         }
         int cvOutputTrack = cvOutputTracks[channelIndex];
         if (!_cvOutputOverride) {
-            _cvOutput.setChannel(channelIndex, _trackEngines[cvOutputTrack]->cvOutput(trackCvIndex[cvOutputTrack]++));
+            float cvValue = _trackEngines[cvOutputTrack]->cvOutput(trackCvIndex[cvOutputTrack]++);
+
+            // Add modulator value if configured (0 = none, 1-8 = Mod 1-8)
+            int modulatorIndex = _model.project().cvOutputModulator(channelIndex);
+            if (modulatorIndex > 0 && modulatorIndex <= CONFIG_MODULATOR_COUNT) {
+                // Modulator value is 0-127, convert to CV offset (-1.0 to +1.0 volts approximately)
+                // Scale: 127 at center = 0V offset, 0 = -1V, 255 = +1V
+                int modValue = _modulatorEngine.currentValue(modulatorIndex - 1);  // 0-127
+                float modOffset = (modValue - 64) / 64.f;  // -1.0 to +1.0
+                cvValue += modOffset;
+            }
+
+            _cvOutput.setChannel(channelIndex, cvValue);
         }
     }
 }

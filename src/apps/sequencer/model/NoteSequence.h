@@ -23,7 +23,7 @@ public:
     //----------------------------------------
 
     using GateProbability = UnsignedValue<3>;
-    using GateOffset = UnsignedValue<4>;  // 4 bits = 0 to 15 for 128 steps resolution (0=on beat, 15=max delay)
+    using GateOffset = UnsignedValue<4>;  // 4 bits = 0 to 15 (0=on beat, 15=~15 ticks late at 192 PPQN)
     using Retrigger = UnsignedValue<2>;
     using RetriggerProbability = UnsignedValue<3>;
     using Length = UnsignedValue<3>;
@@ -95,11 +95,12 @@ public:
             _data0.gateProbability = GateProbability::clamp(gateProbability);
         }
 
-        // gateOffset (0-63: 0=on beat, 63=just before next beat)
+        // gateOffset (0-15: micro-timing offset in ticks)
 
         int gateOffset() const { return _data1.gateOffset; }
         void setGateOffset(int gateOffset) {
-            // Timing offset 0-63 for micro-timing (0=on beat, 63=one tick before next beat)
+            // Timing offset 0-15 for micro-timing (0=on beat, 15=~15 ticks late)
+            // At 192 PPQN and 120 BPM: ~2.6ms per tick, so 15 ticks = ~39ms max offset
             _data1.gateOffset = GateOffset::clamp(gateOffset);
         }
 

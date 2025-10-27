@@ -61,4 +61,5 @@ private:
     // For double-tap detection
     uint32_t _lastTrackPressTime[8] = {0};
     int _lastTrackPressed = -1;
+    uint32_t _lastPerformerPressTime = 0;
 };

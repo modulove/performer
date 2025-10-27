@@ -20,6 +20,11 @@ private:
 
     float time() const;
     float relTime() const { return time() / LoadTime; }
+    void drawSpaceInvader(Canvas &canvas, int x, int y, int type, int scale = 1);
+    void drawHeart(Canvas &canvas, int x, int y, Color color);
+    void drawPewFormerLogo(Canvas &canvas, int x, int y, Color color);
+    void drawModuloveLogo(Canvas &canvas, float fade);
+    void drawKeyboardIcon(Canvas &canvas, int x, int y, float fade);
 
     static constexpr int LoadTime = 2;
 

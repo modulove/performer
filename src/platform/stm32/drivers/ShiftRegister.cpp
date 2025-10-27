@@ -59,10 +59,16 @@ void ShiftRegister::init() {
     gpio_clear(SR_PORT, SR_LATCH);
     gpio_set(SR_PORT, SR_LOAD);
 
-    // output enable
+    // output enable - configure as output and keep disabled initially
+    // This prevents gate glitches during startup - outputs stay disabled
+    // until first proper process() call
     gpio_mode_setup(SR_OE_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, SR_OE);
     gpio_set_output_options(SR_OE_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, SR_OE);
-    gpio_set(SR_OE_PORT, SR_OE);
+    gpio_set(SR_OE_PORT, SR_OE);  // HIGH = outputs disabled
+
+    // Note: We do NOT enable outputs here (outputs remain disabled).
+    // The first process() call will write proper zero state from _outputs array
+    // and then outputs will be enabled by the driver task.
 }
 
 void ShiftRegister::process() {

@@ -18,16 +18,26 @@ public:
 private:
     enum class Function {
         Shape = 0,
-        Rate = 1,
-        Depth = 2,
-        Offset = 3,
-        Phase = 4,
+        Mode = 1,
+        Rate = 2,
+        Depth = 3,
+        Offset = 4,
+        Phase = 5,
+    };
+
+    // Routing overlay function enum (reordered: F1=MODE, F2=GATE, F3=TARGET, F4=EVENT, F5=CC NUM)
+    enum class RoutingFunction {
+        Mode = 0,      // Free/Sync/Retrigger
+        Gate = 1,      // Gate track 1-16
+        Target = 2,    // MIDI 1-16 / CV 1-8
+        Event = 3,     // Note vs CC (MIDI only)
+        CCNumber = 4,  // CC# 0-127 (MIDI CC only)
     };
 
     void setSelectedModulator(int index);
     void setSelectedFunction(Function function);
+    void setSelectedRoutingFunction(RoutingFunction function);
     void updateLedPreview();
-    int clamp(int value, int min, int max);
     int generateWaveformPreview(Modulator::Shape shape, uint16_t phase);
     void updateWaveformCache();
 
@@ -35,14 +45,32 @@ private:
     void contextShow();
     void contextAction(int index);
     void quickMapToOutput(int outputIndex);
-    void applyCustomPreset();
-    void applyModulatorCC0Preset();
     void showRoutingPopup();
+    void loadRoutingFromMidiOutput();
+    void applyRoutingToMidiOutput();
 
     int _selectedModulator = 0;
     Function _selectedFunction = Function::Shape;
 
-    // Routing popup state
+    // Pagination state
+    int _currentPage = 0;  // Current function button page (0 or 1)
+    int _totalPages = 1;   // Total number of pages (depends on shape)
+
+    // Routing overlay state (Shift+Page toggle)
+    bool _showRoutingOverlay = false;
+    RoutingFunction _selectedRoutingFunction = RoutingFunction::Mode;
+
+    enum class RoutingTargetType {
+        Midi,  // MIDI outputs 1-16
+        CV,    // CV outputs 1-8
+    };
+
+    RoutingTargetType _routingTargetType = RoutingTargetType::Midi;
+    int _routingTargetIndex = 0;  // Index within the target type (0-15 for MIDI, 0-7 for CV)
+    bool _routingEventIsCC = true;  // false = Note, true = CC (only for MIDI)
+    int _routingCCNum = 0;  // CC number being configured (0-127, only for MIDI CC)
+
+    // Routing popup state (old popup system, kept for context menu compatibility)
     enum class RoutingField {
         Output = 0,    // MIDI Output 1-8
         Mode = 1,      // Note or CC
@@ -55,8 +83,8 @@ private:
     bool _routingToCC = true;  // false = Note, true = CC
     int _routingCCNumber = 1;  // CC# 0-127
 
-    // Waveform cache for performance optimization
-    static constexpr int WAVEFORM_CACHE_SIZE = 252;
+    // Waveform cache for performance optimization (sized for left half window)
+    static constexpr int WAVEFORM_CACHE_SIZE = 112;  // waveformW - 4 (116 - 4)
     int8_t _waveformCache[WAVEFORM_CACHE_SIZE];
     bool _waveformCacheValid = false;
 

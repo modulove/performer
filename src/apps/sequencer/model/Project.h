@@ -335,6 +335,20 @@ public:
         setCvOutputTrack(index, cvOutputTrack(index) + value);
     }
 
+    // cvOutputModulator (0 = none, 1-8 = Mod 1-8)
+
+    const CvOutputTrackArray &cvOutputModulators() const { return _cvOutputModulators; }
+          CvOutputTrackArray &cvOutputModulators()       { return _cvOutputModulators; }
+
+    int cvOutputModulator(int index) const { return _cvOutputModulators[index]; }
+    void setCvOutputModulator(int index, int modulatorIndex) {
+        _cvOutputModulators[index] = clamp(modulatorIndex, 0, CONFIG_MODULATOR_COUNT);
+    }
+
+    void editCvOutputModulator(int index, int value, bool shift) {
+        setCvOutputModulator(index, cvOutputModulator(index) + value);
+    }
+
     // gateOutputTrack
 
     const GateOutputArray &gateOutputTracks() const { return _gateOutputTracks; }
@@ -522,6 +536,7 @@ private:
     ClockSetup _clockSetup;
     TrackArray _tracks;
     CvOutputTrackArray _cvOutputTracks;
+    CvOutputTrackArray _cvOutputModulators;  // 0 = none, 1-8 = Mod 1-8
     GateOutputArray _gateOutputTracks;
     Song _song;
     PlayState _playState;

@@ -10,7 +10,7 @@ static void drawInvertedText(Canvas &canvas, int x, int y, const char *text, boo
     canvas.setColor(Color::Bright);
 
     if (inverted) {
-        canvas.fillRect(x - 1, y - 5, canvas.textWidth(text) + 1, 7);
+        canvas.fillRect(x - 1, y - 5, canvas.textWidth(text) + 1, 9);
         canvas.setBlendMode(BlendMode::Sub);
     }
 
@@ -67,6 +67,47 @@ void WindowPainter::drawFunctionKeys(Canvas &canvas, const char *names[], const 
     }
 }
 
+// Overloaded version with availability flags for dimming unavailable options
+void WindowPainter::drawFunctionKeys(Canvas &canvas, const char *names[], const KeyState &keyState, int highlight, const bool available[]) {
+    canvas.setBlendMode(BlendMode::Set);
+    canvas.setColor(Color::Medium);
+    canvas.hline(0, PageHeight - FooterHeight - 1, PageWidth);
+
+    for (int i = 0; i < FunctionKeyCount; ++i) {
+        if (names[i] || (i + 1 < FunctionKeyCount && names[i + 1])) {
+            int x = (PageWidth * (i + 1)) / FunctionKeyCount;
+            canvas.vline(x, PageHeight - FooterHeight, FooterHeight);
+        }
+    }
+
+    canvas.setFont(Font::Tiny);
+
+    for (int i = 0; i < FunctionKeyCount; ++i) {
+        if (names[i]) {
+            bool pressed = keyState[Key::F0 + i];
+
+            if (highlight >= 0) {
+                pressed = i == highlight;
+            }
+
+            int x0 = (PageWidth * i) / FunctionKeyCount;
+            int x1 = (PageWidth * (i + 1)) / FunctionKeyCount;
+            int w = x1 - x0 + 1;
+
+            // Set color based on availability and pressed state
+            if (!available[i]) {
+                canvas.setColor(Color::Low);  // Dim unavailable options
+            } else if (pressed) {
+                canvas.setColor(Color::Bright);  // Bright for selected
+            } else {
+                canvas.setColor(Color::Medium);  // Medium for available
+            }
+
+            canvas.drawText(x0 + (w - canvas.textWidth(names[i])) / 2, PageHeight - 3, names[i]);
+        }
+    }
+}
+
 void WindowPainter::drawClock(Canvas &canvas, const Engine &engine) {
     static const char *clockModeName[] = { "A", "M", "S" };
     const char *name = engine.recording() ? "R" : clockModeName[int(engine.clock().activeMode())];
@@ -83,17 +124,17 @@ void WindowPainter::drawActiveState(Canvas &canvas, int track, int playPattern, 
     canvas.setBlendMode(BlendMode::Set);
     canvas.setColor(Color::Bright);
 
-    // draw selected track
-    canvas.drawText(40, 8 - 2, FixedStringBuilder<8>("T%d", track + 1));
+    // draw selected track (shifted right for better spacing from BPM)
+    canvas.drawText(45, 8 - 2, FixedStringBuilder<8>("T%d", track + 1));
 
     if (snapshotActive) {
-        drawInvertedText(canvas, 56, 8 - 2, "SNAP", true);
+        drawInvertedText(canvas, 61, 8 - 2, "SNAP", true);
     } else {
         // draw active pattern
-        drawInvertedText(canvas, 56, 8 - 2, FixedStringBuilder<8>("P%d", playPattern + 1), songActive);
+        drawInvertedText(canvas, 61, 8 - 2, FixedStringBuilder<8>("P%d", playPattern + 1), songActive);
 
         // draw edit pattern
-        drawInvertedText(canvas, 75, 8 - 2, FixedStringBuilder<8>("E%d", editPattern + 1), playPattern == editPattern);
+        drawInvertedText(canvas, 80, 8 - 2, FixedStringBuilder<8>("E%d", editPattern + 1), playPattern == editPattern);
     }
 }
 
@@ -125,7 +166,7 @@ void WindowPainter::drawHeader(Canvas &canvas, const Model &model, const Engine 
 
     canvas.setBlendMode(BlendMode::Set);
     canvas.setColor(Color::Medium);
-    canvas.hline(0, HeaderHeight, PageWidth);
+    canvas.hline(0, HeaderHeight + 1, PageWidth);
 }
 
 void WindowPainter::drawFooter(Canvas &canvas) {
@@ -136,6 +177,45 @@ void WindowPainter::drawFooter(Canvas &canvas) {
 
 void WindowPainter::drawFooter(Canvas &canvas, const char *names[], const KeyState &keyState, int highlight) {
     drawFunctionKeys(canvas, names, keyState, highlight);
+}
+
+void WindowPainter::drawFooter(Canvas &canvas, const char *names[], const KeyState &keyState, int highlight, const bool available[]) {
+    drawFunctionKeys(canvas, names, keyState, highlight, available);
+}
+
+void WindowPainter::drawPagination(Canvas &canvas, int currentPage, int totalPages) {
+    if (totalPages <= 1) {
+        return;  // No pagination needed for single page
+    }
+
+    canvas.setBlendMode(BlendMode::Set);
+
+    // Footer is 9 pixels high (55-63), center arrows vertically within it
+    const int footerY = PageHeight - FooterHeight + 2;  // Start at y=57
+    const int arrowSize = 3;  // Smaller size to fit within footer
+
+    // Left arrow (previous page) - at left edge of footer
+    bool hasPrevPage = (currentPage > 0);
+    canvas.setColor(hasPrevPage ? Color::Bright : Color::Low);
+
+    // Draw left triangle arrow (◀︎) - points left
+    int leftX = 3;
+    for (int i = 0; i < arrowSize; ++i) {
+        int height = (i * 2) + 1;
+        int yOffset = arrowSize - i - 1;
+        canvas.vline(leftX + i, footerY + yOffset, height);
+    }
+
+    // Right arrow (next page) - at right edge of footer
+    bool hasNextPage = (currentPage < totalPages - 1);
+    canvas.setColor(hasNextPage ? Color::Bright : Color::Low);
+
+    // Draw right triangle arrow (▶︎) - points right
+    int rightX = PageWidth - 3 - arrowSize;
+    for (int i = 0; i < arrowSize; ++i) {
+        int height = (arrowSize - i) * 2 - 1;
+        canvas.vline(rightX + i, footerY + i, height);
+    }
 }
 
 void WindowPainter::drawScrollbar(Canvas &canvas, int x, int y, int w, int h, int totalRows, int visibleRows, int displayRow) {

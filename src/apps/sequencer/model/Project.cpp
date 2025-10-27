@@ -52,6 +52,7 @@ void Project::clear() {
 
     for (int i = 0; i < CONFIG_CHANNEL_COUNT; ++i) {
         _cvOutputTracks[i] = i;
+        _cvOutputModulators[i] = 0;  // 0 = no modulator
         _gateOutputTracks[i] = i;
     }
 
@@ -124,6 +125,7 @@ void Project::write(VersionedSerializedWriter &writer) const {
 
     writeArray(writer, _tracks);
     writeArray(writer, _cvOutputTracks);
+    writeArray(writer, _cvOutputModulators);
     writeArray(writer, _gateOutputTracks);
 
     _song.write(writer);
@@ -173,6 +175,7 @@ bool Project::read(VersionedSerializedReader &reader) {
 
     readArray(reader, _tracks);
     readArray(reader, _cvOutputTracks);
+    readArray(reader, _cvOutputModulators);
     readArray(reader, _gateOutputTracks);
 
     _song.read(reader);

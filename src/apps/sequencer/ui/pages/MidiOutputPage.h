@@ -35,6 +35,7 @@ private:
     void showOutput(int outputIndex);
     void selectOutput(int outputIndex);
     void setSelectedFunction(Function function);
+    void applyComprehensivePreset();  // Combined preset: Tracks 9-16 + Mods 1-8
 
     uint8_t _selectedOutput = 0;
     Function _selectedFunction = Function::Target;

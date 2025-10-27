@@ -13,6 +13,7 @@
 #include "FileSelectPage.h"
 #include "GeneratorPage.h"
 #include "GeneratorSelectPage.h"
+#include "KeyboardPage.h"
 #include "LayoutPage.h"
 #include "MidiOutputPage.h"
 #include "ModulatorPage.h"
@@ -39,6 +40,9 @@
 #endif
 #ifdef CONFIG_ENABLE_ASTEROIDS
 #include "AsteroidsPage.h"
+#endif
+#ifdef CONFIG_ENABLE_SPACEINVADERS
+#include "SpaceInvadersPage.h"
 #endif
 
 struct Pages {
@@ -71,6 +75,7 @@ struct Pages {
     FileSelectPage fileSelect;
     ContextMenuPage contextMenu;
     QuickEditPage quickEdit;
+    KeyboardPage keyboard;
     // generator pages
     GeneratorPage generator;
     GeneratorSelectPage generatorSelect;
@@ -85,6 +90,9 @@ struct Pages {
 #endif
 #ifdef CONFIG_ENABLE_ASTEROIDS
     AsteroidsPage asteroids;
+#endif
+#ifdef CONFIG_ENABLE_SPACEINVADERS
+    SpaceInvadersPage spaceinvaders;
 #endif
 
     Pages(PageManager &manager, PageContext &context) :
@@ -117,6 +125,7 @@ struct Pages {
         fileSelect(manager, context),
         contextMenu(manager, context),
         quickEdit(manager, context),
+        keyboard(manager, context),
         // generator pages
         generator(manager, context),
         generatorSelect(manager, context),
@@ -131,6 +140,9 @@ struct Pages {
 #endif
 #ifdef CONFIG_ENABLE_ASTEROIDS
         ,asteroids(manager, context)
+#endif
+#ifdef CONFIG_ENABLE_SPACEINVADERS
+        ,spaceinvaders(manager, context)
 #endif
     {}
 };

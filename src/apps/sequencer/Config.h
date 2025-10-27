@@ -4,10 +4,10 @@
 
 // Version tag
 #define CONFIG_VERSION_MAGIC            0xfadebabe
-#define CONFIG_VERSION_NAME             "POW|FORMER SEQUENCER"
+#define CONFIG_VERSION_NAME             "PEW|FORMER SEQUENCER"
 #define CONFIG_VERSION_MAJOR            0
 #define CONFIG_VERSION_MINOR            0
-#define CONFIG_VERSION_REVISION         7
+#define CONFIG_VERSION_REVISION         63
 
 // Task priorities
 #define CONFIG_DRIVER_TASK_PRIORITY     5
@@ -63,4 +63,5 @@
 
 
 #define CONFIG_ENABLE_ASTEROIDS
+#define CONFIG_ENABLE_SPACEINVADERS
 // #define CONFIG_ENABLE_INTRO

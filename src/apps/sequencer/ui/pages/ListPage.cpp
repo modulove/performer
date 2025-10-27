@@ -34,15 +34,50 @@ void ListPage::draw(Canvas &canvas) {
         displayRow = std::max(0, _listModel->rows() - LineCount);
     }
 
+    // DYNAMIC COLUMN WIDTH CALCULATION
+    // Measure actual content width for column 0 across all visible rows
+    canvas.setFont(Font::Small);
+    int maxCol0Width = 0;
     for (int i = 0; i < LineCount; ++i) {
         int row = displayRow + i;
         if (row < _listModel->rows()) {
-            drawCell(canvas, row, 0, 8, 12 + i * LineHeight, 128 - 16, LineHeight);
-            drawCell(canvas, row, 1, 128, 12 + i * LineHeight, 128 - 16, LineHeight);
+            FixedStringBuilder<32> str;
+            _listModel->cell(row, 0, str);
+            int textWidth = canvas.textWidth(str);
+            if (textWidth > maxCol0Width) {
+                maxCol0Width = textWidth;
+            }
         }
     }
 
-    WindowPainter::drawScrollbar(canvas, Width - 8, 12, 4, LineCount * LineHeight, _listModel->rows(), LineCount, displayRow);
+    // Calculate column positions with dynamic spacing
+    const int leftMargin = 8;
+    const int minGap = 8;           // Minimum gap between columns
+    const int scrollbarWidth = 12;  // Space for scrollbar on right
+    const int availableWidth = Width - leftMargin - scrollbarWidth;
+
+    // Column 0 gets exactly what it needs, column 1 gets the rest
+    int col0Width = maxCol0Width + minGap;
+    int col1X = leftMargin + col0Width;
+    int col1Width = availableWidth - col0Width;
+
+    // Ensure column 1 has minimum space (if content too wide, allow overlap with scrollbar)
+    if (col1Width < 40) {
+        col1Width = 40;
+        col1X = Width - scrollbarWidth - col1Width;
+        col0Width = col1X - leftMargin - minGap;
+    }
+
+    // Draw all cells with dynamic positioning
+    for (int i = 0; i < LineCount; ++i) {
+        int row = displayRow + i;
+        if (row < _listModel->rows()) {
+            drawCell(canvas, row, 0, leftMargin, 18 + i * LineHeight, col0Width, LineHeight);
+            drawCell(canvas, row, 1, col1X, 18 + i * LineHeight, col1Width, LineHeight);
+        }
+    }
+
+    WindowPainter::drawScrollbar(canvas, Width - 8, 13, 4, LineCount * LineHeight, _listModel->rows(), LineCount, displayRow);
 }
 
 void ListPage::updateLeds(Leds &leds) {
@@ -102,7 +137,7 @@ void ListPage::drawCell(Canvas &canvas, int row, int column, int x, int y, int w
     canvas.setFont(Font::Small);
     canvas.setBlendMode(BlendMode::Set);
     canvas.setColor(column == int(_edit) && row == _selectedRow ? Color::Bright : Color::Medium);
-    canvas.drawText(x, y + 7, str);
+    canvas.drawText(x, y + 2, str);
 }
 
 void ListPage::scrollTo(int row) {

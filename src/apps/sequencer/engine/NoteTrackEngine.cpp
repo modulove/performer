@@ -303,7 +303,9 @@ void NoteTrackEngine::triggerStep(uint32_t tick, uint32_t divisor) {
     _currentStep = SequenceUtils::rotateStep(_sequenceState.step(), sequence.firstStep(), sequence.lastStep(), rotate);
     const auto &step = evalSequence.step(_currentStep);
 
-    uint32_t gateOffset = (divisor * step.gateOffset()) / (NoteSequence::GateOffset::Max + 1);
+    // Gate offset is stored as 0-15, representing sub-divisions of the current step
+    // For 16th notes: gateOffset range = divisor = 48 ticks (64th note grid)
+    uint32_t gateOffset = (step.gateOffset() * divisor) / (NoteSequence::GateOffset::Max + 1);
 
     bool stepGate = evalStepGate(step, _noteTrack.gateProbabilityBias()) || useFillGates;
     if (stepGate) {
@@ -360,6 +362,8 @@ void NoteTrackEngine::recordStep(uint32_t tick, uint32_t divisor) {
         // MICROTIMING CAPTURE
         if (_noteTrack.captureTiming() && noteStartOffset >= 0) {
             // Calculate gate offset with quantize strength
+            // Gate offset is 0-15, representing sub-divisions of the current step
+            // For 16th notes: divisor = 48 ticks, so 64th note grid resolution
             int rawOffset = (noteStartOffset * 16) / divisor;  // Scale to 0-15
             int quantizeStrength = _noteTrack.timingQuantize();  // 0-100%
             int quantizedOffset = (rawOffset * (100 - quantizeStrength)) / 100;

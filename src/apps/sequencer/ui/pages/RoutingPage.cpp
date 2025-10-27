@@ -130,9 +130,9 @@ void RoutingPage::drawCell(Canvas &canvas, int row, int column, int x, int y, in
 
         uint8_t tracks = _editRoute.tracks();
         for (int i = 0; i < CONFIG_TRACK_COUNT; ++i) {
-            canvas.drawRect(x + i * 10, y + 1, 8, 8);
+            canvas.drawRect(x + i * 10, y - 4, 8, 8);
             if (tracks & (1 << i)) {
-                canvas.fillRect(x + 2 + i * 10, y + 3, 4, 4);
+                canvas.fillRect(x + 2 + i * 10, y - 2, 4, 4);
             }
         }
     } else {

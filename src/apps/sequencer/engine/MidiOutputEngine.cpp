@@ -204,9 +204,9 @@ void MidiOutputEngine::sendCvIn(int cvInIndex, float cv) {
                 int sourceIndex = int(controlSource) - int(MidiOutput::Output::ControlSource::FirstCvIn);
                 if (sourceIndex == cvInIndex) {
                     int ccValue = clamp(int((cv + 5.0f) / 10.0f * 127.0f), 0, 127);
-                    auto &state = _outputStates[outputIndex];
-                    MidiPort port = MidiPort(state.target.port());
-                    int channel = state.target.channel();
+                    // Read target directly from output config (not from cached state)
+                    MidiPort port = MidiPort(output.target().port());
+                    int channel = output.target().channel();
                     sendMidi(port, MidiMessage::makeControlChange(channel, output.controlNumber(), ccValue));
                 }
             }
@@ -223,9 +223,9 @@ void MidiOutputEngine::sendModulator(int modulatorIndex, int value) {
                 controlSource <= MidiOutput::Output::ControlSource::LastModulator) {
                 int sourceIndex = int(controlSource) - int(MidiOutput::Output::ControlSource::FirstModulator);
                 if (sourceIndex == modulatorIndex) {
-                    auto &state = _outputStates[outputIndex];
-                    MidiPort port = MidiPort(state.target.port());
-                    int channel = state.target.channel();
+                    // Read target directly from output config (not from cached state)
+                    MidiPort port = MidiPort(output.target().port());
+                    int channel = output.target().channel();
                     sendMidi(port, MidiMessage::makeControlChange(channel, output.controlNumber(), value));
                 }
             }

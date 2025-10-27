@@ -15,7 +15,7 @@ public:
     {}
 
     virtual int rows() const override {
-        return CONFIG_TRACK_COUNT;
+        return CONFIG_CV_OUTPUT_CHANNELS;  // Hardware has 8 CV outputs
     }
 
     virtual int columns() const override {

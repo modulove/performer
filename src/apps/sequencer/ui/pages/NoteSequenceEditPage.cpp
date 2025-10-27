@@ -193,7 +193,7 @@ void NoteSequenceEditPage::draw(Canvas &canvas) {
             canvas.drawText(x + (stepWidth - canvas.textWidth(str) + 1) / 2, y + 20, str);
             str.reset();
             scale.noteName(str, step.note(), rootNote, Scale::Short2);
-            canvas.drawText(x + (stepWidth - canvas.textWidth(str) + 1) / 2, y + 27, str);
+            canvas.drawText(x + (stepWidth - canvas.textWidth(str) + 1) / 2, y + 28, str);  // +1px spacing
             break;
         }
         case Layer::NoteVariationRange: {
@@ -223,7 +223,7 @@ void NoteSequenceEditPage::draw(Canvas &canvas) {
             canvas.drawText(x + (stepWidth - canvas.textWidth(str) + 1) / 2, y + 20, str);
             str.reset();
             Types::printCondition(str, step.condition(), Types::ConditionFormat::Short2);
-            canvas.drawText(x + (stepWidth - canvas.textWidth(str) + 1) / 2, y + 27, str);
+            canvas.drawText(x + (stepWidth - canvas.textWidth(str) + 1) / 2, y + 28, str);  // +1px spacing
             break;
         }
         case Layer::Last:

@@ -8,6 +8,10 @@ public:
         _state(seed)
     {}
 
+    inline void seed(uint32_t seed) {
+        _state = seed;
+    }
+
     inline uint32_t next() {
         _state = _state * 1664525L + 1013904223L;
         return _state;

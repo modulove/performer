@@ -40,4 +40,5 @@ private:
     Generator *_generator;
 
     std::pair<uint8_t, uint8_t> _valueRange;
+    int _activeFunction = -1;  // Track which function button is toggled active (-1 = none)
 };

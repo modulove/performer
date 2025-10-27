@@ -5,7 +5,7 @@
 #include "ui/LedPainter.h"
 #include "ui/painters/WindowPainter.h"
 #include "ui/painters/SequencePainter.h"
-
+#include "core/utils/MathUtils.h"
 #include "core/utils/StringBuilder.h"
 
 enum class Function {
@@ -75,41 +75,57 @@ void PerformerPage::draw(Canvas &canvas) {
 
         if (_allTracksView) {
             // Simplified all-tracks view: just boxes for mute toggle
+            // Reset blend mode at start of each track to avoid state pollution
+            canvas.setBlendMode(BlendMode::Set);
+
             // draw outer rectangle (track activity)
             canvas.setColor(trackEngine.activity() ? Color::Bright : Color::Medium);
             canvas.drawRect(x, y, w, h);
 
             // draw mutes and mute requests
             bool isMuted = trackState.mute();
-            canvas.setColor(Color::Bright);
             if (trackState.hasMuteRequest() && trackState.mute() != trackState.requestedMute()) {
                 hasRequested = true;
+                canvas.setColor(Color::Bright);
                 canvas.fillRect(x + BorderRequested, y + BorderRequested, w - 2 * BorderRequested, h - 2 * BorderRequested);
             } else if (isMuted) {
-                canvas.fillRect(x + Border, y + Border, w - 2 * Border, h - 2 * Border);
+                // Fill entire box with dimmed background for better text visibility
+                canvas.setColor(Color::MediumBright);
+                canvas.fillRect(x + 1, y + 1, w - 2, h - 2);
             }
 
             // draw label inside the box
-            // In pattern mode: always show pattern number (P1-P16), dimmed if muted
+            // In pattern mode: always show pattern number (P1-P16), dark on white if muted
             // In normal mode: show track number (T1-T16) only when not muted
-            canvas.setBlendMode(BlendMode::Set);
             if (_patternMode) {
-                // Always show pattern number, dimmed if muted
-                canvas.setColor(isMuted ? Color::Medium : Color::Bright);
                 int patternNum = trackState.pattern() + 1;
+                if (isMuted) {
+                    // Dark text on white background: use Sub mode to darken
+                    canvas.setBlendMode(BlendMode::Sub);
+                    canvas.setColor(Color::Bright);
+                } else {
+                    // White text on dark background: use Add mode to lighten
+                    canvas.setBlendMode(BlendMode::Add);
+                    canvas.setColor(Color::Bright);
+                }
                 canvas.drawTextCentered(x, y + 2, w, 8, FixedStringBuilder<8>("P%d", patternNum));
             } else if (!isMuted) {
                 // Show track number only when not muted
+                canvas.setBlendMode(BlendMode::Add);
                 canvas.setColor(Color::Bright);
                 canvas.drawTextCentered(x, y + 2, w, 8, FixedStringBuilder<8>("T%d", trackIndex + 1));
             }
         } else {
             // Normal 8-track view with labels and progress
             // Always show track number above (T1-T16), highlight when fill is active
+            canvas.setBlendMode(BlendMode::Add);
             canvas.setColor(trackState.fill() ? Color::Bright : Color::Medium);
             canvas.drawTextCentered(x, y - 2, w, 8, FixedStringBuilder<8>("T%d", trackIndex + 1));
 
             y += 8;
+
+            // Reset blend mode before drawing rectangles
+            canvas.setBlendMode(BlendMode::Set);
 
             // draw outer rectangle (track activity)
             canvas.setColor(trackEngine.activity() ? Color::Bright : Color::Medium);
@@ -117,27 +133,38 @@ void PerformerPage::draw(Canvas &canvas) {
 
             // draw mutes and mute requests
             bool isMuted = trackState.mute();
-            canvas.setColor(Color::Bright);
             if (trackState.hasMuteRequest() && trackState.mute() != trackState.requestedMute()) {
                 hasRequested = true;
+                canvas.setColor(Color::Bright);
                 canvas.fillRect(x + BorderRequested, y + BorderRequested, w - 2 * BorderRequested, h - 2 * BorderRequested);
             } else if (isMuted) {
-                canvas.fillRect(x + Border, y + Border, w - 2 * Border, h - 2 * Border);
+                // Fill entire box with dimmed background for better text visibility
+                canvas.setColor(Color::MediumBright);
+                canvas.fillRect(x + 1, y + 1, w - 2, h - 2);
             }
 
             // In pattern mode: draw pattern number inside the square for quick feedback
             if (_patternMode) {
-                canvas.setBlendMode(BlendMode::Set);
-                canvas.setColor(isMuted ? Color::None : Color::Bright);
                 int patternNum = trackState.pattern() + 1;
-                canvas.drawTextCentered(x, y + h/2 - 3, w, 8, FixedStringBuilder<8>("P%d", patternNum));
+                if (isMuted) {
+                    // Dark text on white background: use Sub mode to darken
+                    canvas.setBlendMode(BlendMode::Sub);
+                    canvas.setColor(Color::Bright);
+                } else {
+                    // White text on dark background: use Add mode to lighten
+                    canvas.setBlendMode(BlendMode::Add);
+                    canvas.setColor(Color::Bright);
+                }
+                // Center vertically within the box
+                canvas.drawTextCentered(x, y + (h - 8) / 2, w, 8, FixedStringBuilder<8>("P%d", patternNum));
             }
 
             // draw sequence progress
             SequencePainter::drawSequenceProgress(canvas, x, y + h + 2, w, 2, trackEngine.sequenceProgress());
 
             // draw fill & fill amount amount
-            bool pressed = pageKeyState()[MatrixMap::fromStep(trackIndex)];
+            // Use 'i' (0-7) for button detection, not trackIndex (0-15)
+            bool pressed = pageKeyState()[MatrixMap::fromStep(i)];
             canvas.setColor(pressed ? Color::Medium : Color::Low);
             canvas.fillRect(x, y + h + 6, w, 4);
             canvas.setColor(pressed ? Color::Bright : Color::Medium);
@@ -446,7 +473,7 @@ void PerformerPage::encoder(EncoderEvent &event) {
         for (int track = 0; track < CONFIG_TRACK_COUNT; ++track) {
             if (_selectedTracks & (1 << track)) {
                 int currentPattern = playState.trackState(track).pattern();
-                int newPattern = clamp(currentPattern + event.value(), 0, CONFIG_PATTERN_COUNT - 1);
+                int newPattern = utils::clamp(currentPattern + event.value(), 0, CONFIG_PATTERN_COUNT - 1);
                 playState.selectTrackPattern(track, newPattern, PlayState::Immediate);
             }
         }
@@ -499,8 +526,3 @@ void PerformerPage::updateFills() {
     }
 }
 
-int PerformerPage::clamp(int value, int min, int max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}
