@@ -89,6 +89,70 @@
 - `src/apps/sequencer/engine/NoteTrackEngine.cpp` - Conditional capture
 - `src/apps/sequencer/ui/model/NoteTrackListModel.h` - UI integration
 
+#### ⚡ Double-Tap Gate Toggle
+- **Quick gate editing**: Double-tap any step in any layer to toggle its gate on/off
+- **No mode switching required**: Works while editing Note, Velocity, Length, or any other parameter
+- **300ms detection window**: Responsive but accurate double-tap recognition
+- **Workflow improvement**: Faster pattern editing without layer switching
+
+**Technical Details:**
+- Tap tracking with timestamp comparison
+- Works in all edit layers on NoteSequenceEditPage
+- Independent of current layer selection
+
+**Files Modified:**
+- `src/apps/sequencer/ui/pages/NoteSequenceEditPage.h` - Tap tracking variables
+- `src/apps/sequencer/ui/pages/NoteSequenceEditPage.cpp` - Double-tap detection logic
+
+#### 🎹 Keyboard Page (New UI Page)
+- **New dedicated keyboard page** for live note input and testing
+- **Proper 2-octave layout**: 14 white keys, 10 black keys
+- **Black key positions**: [1, 2, 4, 5, 6, 8, 9, 11, 12, 13]
+- **Persistent last note display**: Shows the last note played
+- **Track info at bottom**: Track number, root note, and octave display
+
+**Technical Details:**
+- Full page implementation with proper keyboard layout
+- Real-time note triggering
+- Visual feedback for pressed keys
+
+**Files Created:**
+- `src/apps/sequencer/ui/pages/KeyboardPage.h` - Page definition
+- `src/apps/sequencer/ui/pages/KeyboardPage.cpp` - Page implementation
+
+**Files Modified:**
+- `src/apps/sequencer/CMakeLists.txt` - Added KeyboardPage to build
+- `src/apps/sequencer/ui/pages/Pages.h` - Page integration
+
+#### 🔄 Bank Switching Navigation
+- **Left/Right navigation buttons**: Switch between track banks 1-8 and 9-16
+- **Automatic bank detection**: Bank follows currently selected track
+- **Visual LED distinction**: Bank 2 (tracks 9-16) uses red LEDs for step indication
+- **Seamless integration**: Works across all UI pages (Performer, Pattern, Track, etc.)
+
+**Technical Details:**
+- Bank state management in TopPage
+- LED color inversion for bank 2
+- Context-aware track display
+
+**Files Modified:**
+- `src/apps/sequencer/ui/pages/TopPage.h/cpp` - Bank state management
+- `src/apps/sequencer/ui/LedPainter.cpp` - Bank-aware LED coloring
+- `src/apps/sequencer/ui/pages/PatternPage.cpp` - Bank switching support
+- `src/apps/sequencer/ui/pages/PerformerPage.cpp` - 16-track bank display
+
+#### 🎛️ Modulator Page Access
+- **Direct access via Track5 button**: Quick access to modulator page
+- **Consistent navigation**: Follows same button pattern as other pages
+- **8 modulator slots**: Select modulators 1-8 via step buttons
+
+**Technical Details:**
+- PageKeyMap updated for Track5 → ModulatorPage mapping
+- Integrated into main page navigation system
+
+**Files Modified:**
+- `src/apps/sequencer/ui/PageKeyMap.h` - Track5 button mapping
+
 ### Infrastructure
 
 #### 🏗️ PolySequence Foundation (Work in Progress)
