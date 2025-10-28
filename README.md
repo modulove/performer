@@ -22,11 +22,11 @@ After encountering instability on the mebitek fork, I've decided to start from t
 
 First and foremost, a **huge thank you** to **westlicht** (Simon Kallweit) for creating the original PER|FORMER sequencer. This incredible instrument has been such an integral part of my modular system for years now! The generosity of open-sourcing this beast of a sequencer has enabled not just my own creative work, but an entire community of musicians and developers to push the boundaries of what's possible.
 
-I hope with POW|FORMER I can do justice to your original vision and breathe some fresh life into this amazing platform while pushing the boundaries of what's possible with open source development. Thank you for creating something so special and sharing it with the world!
+I hope with PEW|FORMER I can do justice to your original vision and breathe some fresh life into this amazing platform while pushing the boundaries of what's possible with open source development. Thank you for creating something so special and sharing it with the world!
 
 ---
 
-## POW|FORMER Features (modulove fork)
+## PEW|FORMER Features (modulove fork)
 
 **Video Demo** - https://www.youtube.com/watch?v=F3FiG7CrAoI
 
@@ -93,7 +93,7 @@ This fork adds extensive performance-oriented features for live electronic music
 - **Microtiming resolution**: 7-bit (-63 to +63), ~1ms per step @ 120 BPM
 
 ### Build Information
-Firmware builds to `UPDATE.DAT` file ready for bootloader flashing. Latest build is automatically copied to Desktop as `UPDATE_16TRACKS_MINIMAL.DAT`.
+Firmware builds to `UPDATE.DAT` file ready for bootloader flashing.
 
 --- original documentation below ---
 
