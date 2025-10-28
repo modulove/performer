@@ -18,7 +18,7 @@ After encountering instability on the mebitek fork, I've decided to start from t
 
 ---
 
-## 💙 A Heartfelt Thank You
+## A Heartfelt Thank You
 
 First and foremost, a **huge thank you** to **westlicht** (Simon Kallweit) for creating the original PER|FORMER sequencer. This incredible instrument has been such an integral part of my modular system for years now! The generosity of open-sourcing this beast of a sequencer has enabled not just my own creative work, but an entire community of musicians and developers to push the boundaries of what's possible.
 
@@ -32,13 +32,13 @@ I hope with POW|FORMER I can do justice to your original vision and breathe some
 
 This fork adds extensive performance-oriented features for live electronic music and modular integration:
 
-### 🎹 16-Track Support
+### 16-Track Support
 - **Dual bank system** - 2 banks of 8 tracks with visual LED distinction (bank 2 uses red LEDs)
 - **Extended MIDI routing** - All 16 tracks available as note/gate/velocity/CC sources
 - **Bank switching** - Seamless switching between banks on all pages
 - **Limitations**: 8 patterns per track, 4 song slots (CONFIG_PATTERN_COUNT/CONFIG_SONG_SLOT_COUNT)
 
-### 🌊 8 LFO Modulators
+### 8 LFO Modulators
 - **Independent modulators** - 8 LFOs with multiple waveform shapes:
   - Basic: Sine, Triangle, Saw Up/Down, Square
   - Random: Smooth Random, Stepped Random (with Smooth parameter 0-2000ms)
@@ -50,7 +50,7 @@ This fork adds extensive performance-oriented features for live electronic music
   - "PR. T9-16": Maps tracks 9-16 to MIDI 1-8 @ velocity 127
   - "PR. M1-8": Maps Mod 1-8 to MIDI CC 0 on channels 1-8
 
-### ⏱️ Microtiming Recording (v0.0.63)
+### Microtiming Recording (v0.0.63)
 - **7-bit resolution** - Gate offset range: -63 to +63 (127 values total)
 - **Bidirectional timing** - Negative values trigger early, positive values delay
 - **Capture Timing** - Record exact keyboard/MIDI input timing during live recording
@@ -61,7 +61,7 @@ This fork adds extensive performance-oriented features for live electronic music
 - **High precision** - ~1ms per step @ 120 BPM
 - **Live workflow** - Records timing automatically during performance
 
-### 🎭 Enhanced Performer Page
+### Enhanced Performer Page
 - **Pattern mode LEDs**:
   - Green = Active (not muted)
   - Red = Muted
@@ -70,13 +70,13 @@ This fork adds extensive performance-oriented features for live electronic music
 - **All-tracks view** - See status of all 16 tracks simultaneously
 - **Improved visual feedback** - Consistent LED behavior across both banks
 
-### 🔌 Advanced MIDI/CV Routing
+### Advanced MIDI/CV Routing
 - **CV to MIDI CC** - Map CV inputs 1-4 to MIDI CC outputs
 - **Extended sources** - Tracks 1-16, Mod 1-8, CV In 1-4 all available
 - **Enum validation** - Crash protection for loading old projects
 - **Improved display** - Clear source labels ("Mod 1-8", "CV In 1-4", "T9-16")
 
-### 🎨 UI/UX Improvements (v0.0.63)
+### UI/UX Improvements (v0.0.63)
 - **SVG-based startup logo** - Custom POW|FORMER logo with animated space invaders
 - **New Keyboard page** - Dedicated 2-octave keyboard (14 white + 10 black keys) for live note input
 - **Double-tap gate toggle** - Quick gate editing: double-tap any step in any layer to toggle gate on/off (300ms window)
@@ -86,13 +86,13 @@ This fork adds extensive performance-oriented features for live electronic music
 - **Consistent navigation** - Unified page behavior across all track modes
 - **Better parameter editing** - Encoder acceleration and shift modifiers
 
-### 💾 Technical Details (v0.0.63)
+### Technical Details (v0.0.63)
 - **Memory footprint**: 361KB firmware (361028 text + 6660 data + 153404 bss)
 - **Project compatibility**: Version27 format with backward compatibility
 - **PPQN resolution**: 192 ticks per quarter note
 - **Microtiming resolution**: 7-bit (-63 to +63), ~1ms per step @ 120 BPM
 
-### 📦 Build Information
+### Build Information
 Firmware builds to `UPDATE.DAT` file ready for bootloader flashing. Latest build is automatically copied to Desktop as `UPDATE_16TRACKS_MINIMAL.DAT`.
 
 --- original documentation below ---
