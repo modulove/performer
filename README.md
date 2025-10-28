@@ -28,6 +28,8 @@ I hope with POW|FORMER I can do justice to your original vision and breathe some
 
 ## POW|FORMER Features (modulove fork)
 
+**Video Demo** - https://www.youtube.com/watch?v=F3FiG7CrAoI
+
 This fork adds extensive performance-oriented features for live electronic music and modular integration:
 
 ### 🎹 16-Track Support
