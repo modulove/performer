@@ -16,6 +16,16 @@ After encountering instability on the mebitek fork, I've decided to start from t
 | Shape improvements 	| [docs](./doc/improvements/shape-improvements.md) 	|
 | MIDI improvements 	| [docs](./doc/improvements/midi-improvements.md) 	|
 
+---
+
+## 💙 A Heartfelt Thank You
+
+First and foremost, a **huge thank you** to **westlicht** (Simon Kallweit) for creating the original PER|FORMER sequencer. This incredible instrument has been such an integral part of my modular system for years now! The generosity of open-sourcing this beast of a sequencer has enabled not just my own creative work, but an entire community of musicians and developers to push the boundaries of what's possible.
+
+I hope with POW|FORMER I can do justice to your original vision and breathe some fresh life into this amazing platform while pushing the boundaries of what's possible with open source development. Thank you for creating something so special and sharing it with the world!
+
+---
+
 ## POW|FORMER Features (modulove fork)
 
 This fork adds extensive performance-oriented features for live electronic music and modular integration:
