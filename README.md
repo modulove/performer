@@ -38,13 +38,15 @@ This fork adds extensive performance-oriented features for live electronic music
   - "PR. T9-16": Maps tracks 9-16 to MIDI 1-8 @ velocity 127
   - "PR. M1-8": Maps Mod 1-8 to MIDI CC 0 on channels 1-8
 
-### ⏱️ Microtiming Recording
+### ⏱️ Microtiming Recording (v0.0.63)
+- **7-bit resolution** - Gate offset range: -63 to +63 (127 values total)
+- **Bidirectional timing** - Negative values trigger early, positive values delay
 - **Capture Timing** - Record exact keyboard/MIDI input timing during live recording
 - **Timing Quantize** (0-100%) - Blend between full microtiming capture and grid quantization
   - 0% = Full microtiming (natural feel)
   - 50% = Hybrid (default)
   - 100% = Full quantization (perfect grid)
-- **16-step resolution** - GateOffset stores 0-15 timing subdivisions
+- **High precision** - ~1ms per step @ 120 BPM
 - **Live workflow** - Records timing automatically during performance
 
 ### 🎭 Enhanced Performer Page
@@ -62,17 +64,21 @@ This fork adds extensive performance-oriented features for live electronic music
 - **Enum validation** - Crash protection for loading old projects
 - **Improved display** - Clear source labels ("Mod 1-8", "CV In 1-4", "T9-16")
 
-### 🎨 UI/UX Improvements
+### 🎨 UI/UX Improvements (v0.0.63)
+- **SVG-based startup logo** - Custom POW|FORMER logo with animated space invaders
+- **New Keyboard page** - Dedicated 2-octave keyboard (14 white + 10 black keys) for live note input
+- **Double-tap gate toggle** - Quick gate editing: double-tap any step in any layer to toggle gate on/off (300ms window)
+- **Bank switching navigation** - Use Left/Right buttons to switch between track banks 1-8 and 9-16
 - **LED color coding** - Bank 2 sequences use red LEDs for visual distinction
 - **Shortened labels** - Optimized context menu text for readability
 - **Consistent navigation** - Unified page behavior across all track modes
 - **Better parameter editing** - Encoder acceleration and shift modifiers
 
-### 💾 Technical Details
-- **Memory footprint**: 335KB firmware (335540 text + 6196 data + 150948 bss)
+### 💾 Technical Details (v0.0.63)
+- **Memory footprint**: 361KB firmware (361028 text + 6660 data + 153404 bss)
 - **Project compatibility**: Version27 format with backward compatibility
 - **PPQN resolution**: 192 ticks per quarter note
-- **Microtiming resolution**: ~15.6ms per offset increment @ 120 BPM
+- **Microtiming resolution**: 7-bit (-63 to +63), ~1ms per step @ 120 BPM
 
 ### 📦 Build Information
 Firmware builds to `UPDATE.DAT` file ready for bootloader flashing. Latest build is automatically copied to Desktop as `UPDATE_16TRACKS_MINIMAL.DAT`.
