@@ -1,3 +1,5 @@
+#pragma once
+
 enum ProjectVersion {
     // added NoteTrack::cvUpdateMode
     Version4 = 4,
@@ -92,6 +94,12 @@ enum ProjectVersion {
 
     // added Project::midiIntegrationMode, Project::midiProgramOffset, Project::alwaysSync
     Version32 = 32,
+
+    // added Modulator::cvScale (CV range scaling)
+    Version33 = 33,
+
+    // added Modulator::bipolar (ADSR bipolar mode)
+    Version34 = 34,
 
     // automatically derive latest version
     Last,

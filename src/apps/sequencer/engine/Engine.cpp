@@ -153,19 +153,36 @@ void Engine::update() {
             }
         }
 
-        // tick modulators
+        // tick modulators (Sync/Retrigger/Clocked modes)
         for (int modulatorIndex = 0; modulatorIndex < CONFIG_MODULATOR_COUNT; ++modulatorIndex) {
             const auto &modulator = _project.modulator(modulatorIndex);
             // Get gate from specified track
             int gateTrack = modulator.gateTrack();
             bool gate = _trackEngines[gateTrack]->gateOutput(0);
-            _modulatorEngine.tick(tick, modulator, modulatorIndex, gate);
+            _modulatorEngine.tick(tick, modulator, modulatorIndex, gate, _clock.tickDuration());
             _midiOutputEngine.sendModulator(modulatorIndex, _modulatorEngine.currentValue(modulatorIndex));
         }
 
         // update midi outputs, force sending CC on first tick
         if (tick == 0) {
             _midiOutputEngine.update(true);
+        }
+    }
+
+    // tick Free-mode modulators even when clock is stopped
+    // Free mode should run independently of transport state
+    // BUT: Don't run modulators while engine is suspended (during boot/initialization)
+    if (!_suspended) {
+        for (int modulatorIndex = 0; modulatorIndex < CONFIG_MODULATOR_COUNT; ++modulatorIndex) {
+            const auto &modulator = _project.modulator(modulatorIndex);
+            // Only tick Free mode modulators here (non-Free modes are handled in clock tick loop)
+            if (modulator.mode() == Modulator::Mode::Free &&
+                modulator.shape() != Modulator::Shape::ADSR &&
+                modulator.randomMode() != Modulator::RandomMode::Triggered) {
+                // Free mode doesn't use gate input
+                _modulatorEngine.tickFree(modulator, modulatorIndex, dt);
+                _midiOutputEngine.sendModulator(modulatorIndex, _modulatorEngine.currentValue(modulatorIndex));
+            }
         }
     }
 
@@ -486,10 +503,20 @@ void Engine::updateTrackOutputs() {
             // Add modulator value if configured (0 = none, 1-8 = Mod 1-8)
             int modulatorIndex = _model.project().cvOutputModulator(channelIndex);
             if (modulatorIndex > 0 && modulatorIndex <= CONFIG_MODULATOR_COUNT) {
-                // Modulator value is 0-127, convert to CV offset (-1.0 to +1.0 volts approximately)
-                // Scale: 127 at center = 0V offset, 0 = -1V, 255 = +1V
+                const auto &mod = _model.project().modulator(modulatorIndex - 1);
                 int modValue = _modulatorEngine.currentValue(modulatorIndex - 1);  // 0-127
-                float modOffset = (modValue - 64) / 64.f;  // -1.0 to +1.0
+
+                // Convert modValue to CV voltage based on modulator type and settings
+                float normalized;
+                if (mod.shape() == Modulator::Shape::ADSR && mod.bipolar()) {
+                    // Bipolar ADSR: 0-127 represents -64 to +63, map to -1..+1
+                    normalized = (modValue - 64) / 64.f;
+                } else {
+                    // Unipolar (default): 0-127 maps to -1..+1 (centered around 0)
+                    normalized = (modValue * 2 - 127) / 127.f;
+                }
+
+                float modOffset = normalized * mod.cvScale();
                 cvValue += modOffset;
             }
 

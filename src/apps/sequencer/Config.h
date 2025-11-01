@@ -7,7 +7,7 @@
 #define CONFIG_VERSION_NAME             "PEW|FORMER SEQUENCER"
 #define CONFIG_VERSION_MAJOR            0
 #define CONFIG_VERSION_MINOR            0
-#define CONFIG_VERSION_REVISION         63
+#define CONFIG_VERSION_REVISION         75
 
 // Task priorities
 #define CONFIG_DRIVER_TASK_PRIORITY     5

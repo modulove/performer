@@ -6,6 +6,8 @@
 #include "engine/WaveformGenerator.h"
 #include "core/utils/MathUtils.h"
 #include "core/utils/StringBuilder.h"
+#include "model/MidiOutput.h"
+#include <cmath>
 
 enum class ModulatorContextAction {
     Route,
@@ -56,12 +58,16 @@ void ModulatorPage::draw(Canvas &canvas) {
     const char *functionNames[6];
 
     if (_showRoutingOverlay) {
-        // Routing overlay mode (F1=MODE, F2=GATE, F3=TARGET, F4=EVENT, F5=CC NUM)
+        // Routing overlay mode (F1=MODE, F2=GATE, F3=TARGET, F4=EVENT/SCALE, F5=CC NUM)
         functionNames[0] = "MODE";
         functionNames[1] = "GATE";
         functionNames[2] = "TARGET";
-        functionNames[3] = "EVENT";
-        functionNames[4] = "CC NUM";
+        functionNames[3] = (_routingTargetType == RoutingTargetType::Midi) ? "EVENT" : "SCALE";
+        if (_routingTargetType == RoutingTargetType::Midi && _routingEventIsCC) {
+            functionNames[4] = "CC NUM";
+        } else {
+            functionNames[4] = nullptr;
+        }
         functionNames[5] = nullptr;
     } else {
         // Normal parameter mode - support pagination for ADSR
@@ -75,10 +81,10 @@ void ModulatorPage::draw(Canvas &canvas) {
                 functionNames[4] = "RELEAS";
                 functionNames[5] = nullptr;
             } else {
-                // ADSR Page 2: AMPLITUDE, DEPTH, OFFSET
+                // ADSR Page 2: AMPLITUDE, BIPOLAR
                 functionNames[0] = "AMPLIT";
-                functionNames[1] = "DEPTH";
-                functionNames[2] = "OFSET";
+                functionNames[1] = "BIPOLAR";
+                functionNames[2] = nullptr;
                 functionNames[3] = nullptr;
                 functionNames[4] = nullptr;
                 functionNames[5] = nullptr;
@@ -102,16 +108,19 @@ void ModulatorPage::draw(Canvas &canvas) {
 
     int highlightedFunction = _showRoutingOverlay ? int(_selectedRoutingFunction) : int(_selectedFunction);
 
-    // For routing overlay, mark EVENT and CC NUM as unavailable when routing to CV
+    // For routing overlay, dynamically dim unavailable functions
     if (_showRoutingOverlay) {
         bool available[6];
         for (int i = 0; i < 6; ++i) {
             available[i] = true;  // Default: all available
         }
 
-        // Dim EVENT (F4) and CC NUM (F5) when routing to CV
-        if (_routingTargetType == RoutingTargetType::CV) {
-            available[int(RoutingFunction::Event)] = false;
+        if (_routingTargetType == RoutingTargetType::Midi) {
+            if (!_routingEventIsCC) {
+                available[int(RoutingFunction::CCNumber)] = false;
+            }
+        } else if (_routingTargetType == RoutingTargetType::CV) {
+            available[int(RoutingFunction::Event)] = true;
             available[int(RoutingFunction::CCNumber)] = false;
         }
 
@@ -130,15 +139,94 @@ void ModulatorPage::draw(Canvas &canvas) {
     canvas.setFont(Font::Small);
 
     // Define split screen layout
-    // Screen: 256x64, Header: 0-15, Footer: 54-63, Available: 16-53 (38px height)
+    // Screen: 256x64, Header: 0-15, Footer line at 53, Footer: 54-63, Available: 16-53 (38px height)
     const int waveformX = 4;
-    const int waveformY = 15;     // Centered vertically (15 + 34 = 49, leaving 5px to footer)
+    const int waveformY = 15;     // Centered vertically (15 + 34 = 49, leaving 4px to footer)
     const int waveformW = 116;    // Narrower (was 124)
     const int waveformH = 34;     // Height to fit centered with equal spacing
+    const int footerLineY = 53;   // Footer separator line position
 
     const int paramX = 128;
     const int paramY = 16;
     const int paramW = 128;
+
+    // Current modulator output value (0-127)
+    const int currentValue = _engine.modulatorEngine().currentValue(_selectedModulator);
+    FixedStringBuilder<16> outputDigits;
+
+    // Build routing summary (Mxx/CVyy|Event|#CC or - when not applicable)
+    const int targetModSource = int(MidiOutput::Output::ControlSource::FirstModulator) + _selectedModulator;
+
+    int midiIndex = -1;
+    MidiOutput::Output::Event midiEvent = MidiOutput::Output::Event::None;
+    int midiCcNumber = 0;
+
+    for (int i = 0; i < CONFIG_MIDI_OUTPUT_COUNT; ++i) {
+        auto &output = _project.midiOutput().output(i);
+        if (output.event() == MidiOutput::Output::Event::ControlChange &&
+            int(output.controlSource()) == targetModSource) {
+            midiIndex = i;
+            midiEvent = output.event();
+            midiCcNumber = output.controlNumber();
+            break;
+        }
+    }
+
+    int cvIndex = -1;
+    for (int i = 0; i < CONFIG_CV_OUTPUT_CHANNELS; ++i) {
+        if (_project.cvOutputModulator(i) == (_selectedModulator + 1)) {
+            cvIndex = i;
+            break;
+        }
+    }
+
+    bool hasCvRouting = cvIndex >= 0;
+    bool hasMidiRouting = midiIndex >= 0;
+
+    // Always show MIDI value (0-127)
+    outputDigits("%03d", currentValue);
+
+    // If routed to CV, also prepare voltage display
+    FixedStringBuilder<16> voltageDigits;
+    if (hasCvRouting) {
+        int raw = currentValue * 2 - 127;
+        float normalized = raw / 127.f;
+        int scale = modulator.cvScale();
+        float volts = normalized * scale;
+        voltageDigits("%+.2fV", volts);
+    }
+
+    // Build simplified routing summary - only show active routings
+    FixedStringBuilder<32> routingSummary;
+    bool hasRouting = false;
+
+    if (hasMidiRouting) {
+        auto &output = _project.midiOutput().output(midiIndex);
+        int channel = output.target().channel() + 1;  // Convert 0-indexed to 1-indexed
+        if (hasRouting) {
+            routingSummary(" / ");
+        }
+        if (midiEvent == MidiOutput::Output::Event::ControlChange) {
+            routingSummary("CC%d Ch%d", midiCcNumber, channel);
+        } else if (midiEvent == MidiOutput::Output::Event::Note) {
+            routingSummary("MIDI Ch%d", channel);
+        } else {
+            routingSummary("MIDI %d", midiIndex + 1);
+        }
+        hasRouting = true;
+    }
+
+    if (hasCvRouting) {
+        if (hasRouting) {
+            routingSummary(" / ");
+        }
+        routingSummary("CV%d ±%dV", cvIndex + 1, modulator.cvScale());
+        hasRouting = true;
+    }
+
+    if (!hasRouting) {
+        routingSummary("-");
+    }
 
     // Build parameter value string based on mode (routing overlay or normal)
     FixedStringBuilder<32> valueStr;
@@ -164,10 +252,11 @@ void ModulatorPage::draw(Canvas &canvas) {
             }
             break;
         case RoutingFunction::Event:
-            paramNameStr("EVENT");
             if (_routingTargetType == RoutingTargetType::CV) {
-                valueStr("N/A");  // CV doesn't use event type
+                paramNameStr("SCALE");
+                valueStr("±%dV", modulator.cvScale());
             } else {
+                paramNameStr("EVENT");
                 valueStr("%s", _routingEventIsCC ? "CC" : "Note");
             }
             break;
@@ -210,14 +299,17 @@ void ModulatorPage::draw(Canvas &canvas) {
                     break;
                 }
             } else {
-                // ADSR Page 2 - Only AMPLITUDE is used for ADSR
+                // ADSR Page 2
                 switch (_selectedFunction) {
                 case Function::Shape:  // AMPLITUDE on page 2
                     paramNameStr("AMPLITUDE");
                     modulator.printAmplitude(valueStr);
                     break;
+                case Function::Mode:  // BIPOLAR on page 2
+                    paramNameStr("BIPOLAR");
+                    modulator.printBipolar(valueStr);
+                    break;
                 default:
-                    // Depth and Offset are not used for ADSR
                     break;
                 }
             }
@@ -278,6 +370,11 @@ void ModulatorPage::draw(Canvas &canvas) {
     canvas.setColor(Color::Bright);
     canvas.drawTextCentered(paramX, paramY + 13, paramW, 12, valueStr);
 
+    // Show condensed routing summary beneath parameter value
+    canvas.setFont(Font::Tiny);
+    canvas.setColor(Color::Medium);
+    canvas.drawTextCentered(paramX, paramY + 29, paramW, 8, routingSummary);
+
     // Draw LEFT HALF - Waveform window
     // Draw border box for waveform
     canvas.setColor(Color::Bright);
@@ -296,12 +393,54 @@ void ModulatorPage::draw(Canvas &canvas) {
     // Draw waveform
     canvas.setColor(Color::Bright);
 
-    // For Random shape, show the current value as a horizontal line
+    // For Random shape, show time-scaled waveform with playhead at left edge
     if (isRandom) {
-        int currentValue = _engine.modulatorEngine().currentValue(_selectedModulator);
-        // Map 0-127 to scope height
-        int y = scopeY - ((currentValue - 64) * scopeHeight / 2) / 127;
-        canvas.hline(scopeX, y, scopeWidth);
+        const int minY = waveformY + 1;
+        const int maxY = std::min(waveformY + waveformH - 2, footerLineY - 5);
+
+        // Calculate time scale based on smooth parameter
+        // smoothMs determines how many milliseconds to show across the scope width
+        int smoothMs = modulator.smooth();
+
+        // Calculate display window: show 2x the slew time (to see full transition + history)
+        // Minimum 100ms, maximum 4000ms for reasonable display
+        int displayWindowMs = std::max(100, std::min(4000, smoothMs * 2));
+        if (smoothMs == 0) displayWindowMs = 500;  // Default window for instant mode
+
+        // Convert to ticks based on current tempo
+        float tickDurationMs = _engine.clock().tickDuration() * 1000.0f;
+        int displayWindowTicks = static_cast<int>(displayWindowMs / tickDurationMs);
+
+        // Clamp to available history
+        displayWindowTicks = std::min(displayWindowTicks, 128);
+
+        // Draw playhead at left edge
+        canvas.setColor(Color::Medium);
+        canvas.vline(scopeX, waveformY + 1, waveformH - 2);
+        canvas.setColor(Color::Bright);
+
+        // Draw waveform from history, stretching to fill the scope width
+        for (int x = 1; x < scopeWidth - 1; ++x) {
+            // Map x position to history offset based on display window
+            // x=1 is leftmost (most recent), x=scopeWidth-1 is rightmost (oldest in window)
+            float normalizedX = static_cast<float>(x - 1) / (scopeWidth - 2);
+            int historyOffset = static_cast<int>(normalizedX * displayWindowTicks);
+            int historyOffset2 = historyOffset + 1;
+
+            // Get values from history (-127 to +127 range)
+            int val1 = _engine.modulatorEngine().getRandomHistory(_selectedModulator, historyOffset);
+            int val2 = _engine.modulatorEngine().getRandomHistory(_selectedModulator, historyOffset2);
+
+            // Map to screen coordinates (centered on scopeY)
+            int y1 = scopeY - (val1 * scopeHeight / 2) / 127;
+            int y2 = scopeY - (val2 * scopeHeight / 2) / 127;
+
+            // Clamp to bounds
+            y1 = std::max(minY, std::min(maxY, y1));
+            y2 = std::max(minY, std::min(maxY, y2));
+
+            canvas.line(scopeX + x, y1, scopeX + x + 1, y2);
+        }
     } else if (isADSR) {
         // For ADSR, draw envelope preview with amplitude control
         int attackMs = modulator.attack();
@@ -352,15 +491,26 @@ void ModulatorPage::draw(Canvas &canvas) {
         int playheadX = scopeX;
 
         // Calculate playhead position based on tick progress through each phase
-        // Use the same tick calculation formula as the engine to ensure accurate sync
+        // Use the same conversion as the engine for consistent timing
+        auto msToTicks = [&] (int ms) -> int {
+            if (ms <= 0) {
+                return 1;
+            }
+            float tickDuration = _engine.clock().tickDuration();
+            if (tickDuration <= 0.f) {
+                tickDuration = 60.f / (120.f * CONFIG_PPQN);
+            }
+            float ticks = ms / (tickDuration * 1000.f);
+            return std::max(1, static_cast<int>(std::ceil(ticks)));
+        };
+
         switch (adsrState) {
         case decltype(adsrState)::Idle:
             playheadX = scopeX;  // At start
             break;
         case decltype(adsrState)::Attack: {
             if (attackMs > 0) {
-                // Use same formula as engine: attackTicks = (attackMs * CONFIG_PPQN) / 2500
-                int attackTicks = (attackMs * CONFIG_PPQN) / 2500;
+                int attackTicks = msToTicks(attackMs);
                 if (attackTicks == 0) attackTicks = 1;
                 // Progress as percentage based on ticks
                 int progress = utils::clamp((int)((adsrTimer * attackWidth) / attackTicks), 0, attackWidth);
@@ -372,7 +522,7 @@ void ModulatorPage::draw(Canvas &canvas) {
         }
         case decltype(adsrState)::Decay: {
             if (decayMs > 0 && sustainLevel < 127) {
-                int decayTicks = (decayMs * CONFIG_PPQN) / 2500;
+                int decayTicks = msToTicks(decayMs);
                 if (decayTicks == 0) decayTicks = 1;
                 int progress = utils::clamp((int)((adsrTimer * decayWidth) / decayTicks), 0, decayWidth);
                 playheadX = scopeX + attackWidth + progress;
@@ -387,7 +537,7 @@ void ModulatorPage::draw(Canvas &canvas) {
             break;
         case decltype(adsrState)::Release: {
             if (releaseMs > 0) {
-                int releaseTicks = (releaseMs * CONFIG_PPQN) / 2500;
+                int releaseTicks = msToTicks(releaseMs);
                 if (releaseTicks == 0) releaseTicks = 1;
                 int progress = utils::clamp((int)((adsrTimer * releaseWidth) / releaseTicks), 0, releaseWidth);
                 playheadX = scopeX + attackWidth + decayWidth + sustainWidth + progress;
@@ -413,9 +563,14 @@ void ModulatorPage::draw(Canvas &canvas) {
 
         // Draw waveform from cache - much faster than recalculating every frame!
         // Use line-only rendering to reduce screen noise
+        const int minY = waveformY + 1;  // Top edge of box (inside border)
+        const int maxY = std::min(waveformY + waveformH - 2, footerLineY - 5);  // Bottom edge, stay away from footer
         for (int x = 0; x < WAVEFORM_CACHE_SIZE - 1; ++x) {
             int y1 = scopeY - (_waveformCache[x] * scopeHeight / 2) / 127;
             int y2 = scopeY - (_waveformCache[x + 1] * scopeHeight / 2) / 127;
+            // Clamp y coordinates to stay within the box and away from footer
+            y1 = std::max(minY, std::min(maxY, y1));
+            y2 = std::max(minY, std::min(maxY, y2));
             canvas.line(scopeX + x, y1, scopeX + x + 1, y2);
         }
 
@@ -427,12 +582,17 @@ void ModulatorPage::draw(Canvas &canvas) {
         canvas.vline(scopeX + playheadX, waveformY + 1, waveformH - 2);
     }
 
+    // Redraw waveform box border on top to ensure clean edges
+    canvas.setColor(Color::Bright);
+    canvas.drawRect(waveformX, waveformY, waveformW, waveformH);
+
     // Draw real-time modulator output level bar (slim vertical bar on right side of waveform)
-    int currentValue = _engine.modulatorEngine().currentValue(_selectedModulator);
     const int barX = waveformX + waveformW + 4;  // Right side of waveform, offset slightly
-    const int barWidth = 4;
+    const int barWidth = 8;  // Increased from 4 to 8 pixels for better visibility
     const int barHeight = waveformH;
     const int barY = waveformY;
+    const int labelX = barX + barWidth + 4;       // Maintain consistent spacing
+    const int labelY = barY;
 
     // Draw bar background
     canvas.setColor(Color::Medium);
@@ -441,8 +601,25 @@ void ModulatorPage::draw(Canvas &canvas) {
     // Draw level indicator (white line that moves vertically based on output 0-127)
     canvas.setColor(Color::Bright);
     int levelY = barY + barHeight - 2 - ((currentValue * (barHeight - 4)) / 127);
+    // Thicker indicator: 4 pixels tall, centered in bar
     canvas.hline(barX + 1, levelY, barWidth - 2);
-    canvas.hline(barX + 1, levelY + 1, barWidth - 2);  // 2px thick for visibility
+    canvas.hline(barX + 1, levelY + 1, barWidth - 2);
+    canvas.hline(barX + 1, levelY + 2, barWidth - 2);
+    canvas.hline(barX + 1, levelY + 3, barWidth - 2);
+
+    // Display output readout adjacent to slider
+    canvas.setFont(Font::Tiny);
+    auto labelMetrics = canvas.fontMetrics();
+    canvas.setColor(Color::Medium);
+    canvas.drawTextTopLeft(labelX, labelY, "OUT");
+    canvas.setColor(Color::Bright);
+    canvas.drawTextTopLeft(labelX, labelY + labelMetrics.lineHeight, outputDigits);
+
+    // If routing to CV, show voltage below MIDI number
+    if (hasCvRouting) {
+        canvas.setColor(Color::Bright);
+        canvas.drawTextTopLeft(labelX, labelY + (labelMetrics.lineHeight * 2), voltageDigits);
+    }
 
     // Draw routing popup if active
     if (_showRoutingPopup) {
@@ -656,9 +833,14 @@ void ModulatorPage::encoder(EncoderEvent &event) {
             break;
         }
         case RoutingFunction::Event:
-            // Only allow editing if routing to MIDI (CV doesn't support event types)
-            if (_routingTargetType == RoutingTargetType::Midi && event.value() != 0) {
-                _routingEventIsCC = !_routingEventIsCC;
+            if (_routingTargetType == RoutingTargetType::Midi) {
+                if (event.value() != 0) {
+                    _routingEventIsCC = !_routingEventIsCC;
+                }
+            } else if (_routingTargetType == RoutingTargetType::CV) {
+                if (event.value() != 0) {
+                    modulator.editCvScale(event.value(), event.pressed());
+                }
             }
             break;
         case RoutingFunction::CCNumber:
@@ -698,13 +880,15 @@ void ModulatorPage::encoder(EncoderEvent &event) {
                     break;
                 }
             } else {
-                // ADSR Page 2 - Only AMPLITUDE is used
+                // ADSR Page 2
                 switch (_selectedFunction) {
                 case Function::Shape:  // AMPLITUDE
                     modulator.editAmplitude(event.value(), event.pressed());
                     break;
+                case Function::Mode:  // BIPOLAR
+                    modulator.editBipolar(event.value(), event.pressed());
+                    break;
                 default:
-                    // Depth and Offset not used for ADSR
                     break;
                 }
             }
@@ -833,7 +1017,20 @@ void ModulatorPage::contextAction(int index) {
 void ModulatorPage::quickMapToOutput(int outputIndex) {
     if (outputIndex >= CONFIG_MIDI_OUTPUT_COUNT) return;
 
+    // Clear any existing CV routing for this modulator to prevent conflicts
+    for (int i = 0; i < CONFIG_CV_OUTPUT_CHANNELS; ++i) {
+        if (_project.cvOutputModulator(i) == (_selectedModulator + 1)) {
+            _project.setCvOutputModulator(i, 0);  // Clear this CV routing
+        }
+    }
+
     auto &output = _project.midiOutput().output(outputIndex);
+
+    // Check if this MIDI output is already in use for Note events (track routing)
+    if (output.event() == MidiOutput::Output::Event::Note) {
+        showMessage(FixedStringBuilder<32>("MIDI Out %d used by track", outputIndex + 1), 3000);
+        return;  // Don't overwrite track routing
+    }
 
     if (_routingToCC) {
         // CC Mode: Set up modulator as CC source
@@ -910,9 +1107,41 @@ void ModulatorPage::loadRoutingFromMidiOutput() {
 }
 
 void ModulatorPage::applyRoutingToMidiOutput() {
+    // Validate indices before applying routing to prevent crashes
+    if (_selectedModulator < 0 || _selectedModulator >= CONFIG_MODULATOR_COUNT) {
+        showMessage("Invalid modulator index", 2000);
+        return;
+    }
+
+    if (_routingTargetType == RoutingTargetType::Midi) {
+        if (_routingTargetIndex < 0 || _routingTargetIndex >= CONFIG_MIDI_OUTPUT_COUNT) {
+            showMessage("Invalid MIDI output index", 2000);
+            return;
+        }
+    } else {
+        if (_routingTargetIndex < 0 || _routingTargetIndex >= CONFIG_CV_OUTPUT_CHANNELS) {
+            showMessage("Invalid CV output index", 2000);
+            return;
+        }
+    }
+
+    // First, clear any existing CV routing for this modulator to prevent conflicts
+    for (int i = 0; i < CONFIG_CV_OUTPUT_CHANNELS; ++i) {
+        if (_project.cvOutputModulator(i) == (_selectedModulator + 1)) {
+            _project.setCvOutputModulator(i, 0);  // Clear this CV routing
+        }
+    }
+
     if (_routingTargetType == RoutingTargetType::Midi) {
         // Apply routing overlay settings to the selected MIDI output
         auto &output = _project.midiOutput().output(_routingTargetIndex);
+
+        // Check if this MIDI output is already in use for Note events (track routing)
+        // Modulators use CC events, so we can't overwrite Note events
+        if (output.event() == MidiOutput::Output::Event::Note) {
+            showMessage(FixedStringBuilder<32>("MIDI Out %d used by track", _routingTargetIndex + 1), 3000);
+            return;  // Don't overwrite track routing
+        }
 
         if (_routingEventIsCC) {
             // CC Mode: Set up modulator as CC source
@@ -922,8 +1151,9 @@ void ModulatorPage::applyRoutingToMidiOutput() {
             int modSource = int(MidiOutput::Output::ControlSource::FirstModulator) + _selectedModulator;
             output.setControlSource(MidiOutput::Output::ControlSource(modSource));
 
-            // Use the CC number from overlay
-            output.setControlNumber(_routingCCNum);
+            // Use the CC number from overlay (validate 0-127 range)
+            int ccNum = utils::clamp(_routingCCNum, 0, 127);
+            output.setControlNumber(ccNum);
 
             // Set target to MIDI port
             // For outputs 9-16 (index 8-15), map to MIDI channels 1-8 (index 0-7)

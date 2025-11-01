@@ -3,18 +3,27 @@
 #include "Config.h"
 
 #include "core/utils/StringBuilder.h"
+#include "ScreenPainter.h"
 
-static void drawInvertedText(Canvas &canvas, int x, int y, const char *text, bool inverted = true) {
-    canvas.setFont(Font::Tiny);
+static void drawInvertedText(ScreenPainter &painter, int x, int baselineY, const char *text, bool inverted = true) {
+    auto &canvas = painter.canvas();
+    const auto metrics = canvas.fontMetrics();
+
+    int drawX = x + painter.offsetX();
+    int baseline = baselineY + painter.offsetY();
+    int top = baseline - metrics.ascent;
+    int height = metrics.ascent + metrics.descent;
+
     canvas.setBlendMode(BlendMode::Set);
     canvas.setColor(Color::Bright);
 
     if (inverted) {
-        canvas.fillRect(x - 1, y - 5, canvas.textWidth(text) + 1, 9);
+        canvas.fillRect(drawX - 1, top, canvas.textWidth(text) + 1, height);
         canvas.setBlendMode(BlendMode::Sub);
     }
 
-    canvas.drawText(x, y, text);
+    canvas.drawText(drawX, baseline, text);
+    canvas.setBlendMode(BlendMode::Set);
 }
 
 void WindowPainter::clear(Canvas &canvas) {
@@ -43,7 +52,8 @@ void WindowPainter::drawFunctionKeys(Canvas &canvas, const char *names[], const 
         }
     }
 
-    canvas.setFont(Font::Tiny);
+    ScreenPainter painter(canvas);
+    painter.setFont(Font::Tiny);
 
     for (int i = 0; i < FunctionKeyCount; ++i) {
         canvas.setColor(Color::Medium);
@@ -62,7 +72,8 @@ void WindowPainter::drawFunctionKeys(Canvas &canvas, const char *names[], const 
                 canvas.setColor(Color::Bright);
             }
 
-            canvas.drawText(x0 + (w - canvas.textWidth(names[i])) / 2, PageHeight - 3, names[i]);
+            int labelX = x0 + (w - painter.textWidth(names[i])) / 2;
+            painter.drawTextBaseline(labelX, PageHeight - 3, names[i]);
         }
     }
 }
@@ -80,7 +91,8 @@ void WindowPainter::drawFunctionKeys(Canvas &canvas, const char *names[], const 
         }
     }
 
-    canvas.setFont(Font::Tiny);
+    ScreenPainter painter(canvas);
+    painter.setFont(Font::Tiny);
 
     for (int i = 0; i < FunctionKeyCount; ++i) {
         if (names[i]) {
@@ -103,7 +115,8 @@ void WindowPainter::drawFunctionKeys(Canvas &canvas, const char *names[], const 
                 canvas.setColor(Color::Medium);  // Medium for available
             }
 
-            canvas.drawText(x0 + (w - canvas.textWidth(names[i])) / 2, PageHeight - 3, names[i]);
+            int labelX = x0 + (w - painter.textWidth(names[i])) / 2;
+            painter.drawTextBaseline(labelX, PageHeight - 3, names[i]);
         }
     }
 }
@@ -112,44 +125,58 @@ void WindowPainter::drawClock(Canvas &canvas, const Engine &engine) {
     static const char *clockModeName[] = { "A", "M", "S" };
     const char *name = engine.recording() ? "R" : clockModeName[int(engine.clock().activeMode())];
 
-    drawInvertedText(canvas, 2, 8 - 2, name);
+    ScreenPainter painter(canvas);
+    painter.setFont(Font::Tiny);
+    painter.setOffset(0, -2);
+
+    drawInvertedText(painter, 2, 8, name);
 
     canvas.setBlendMode(BlendMode::Set);
     canvas.setColor(Color::Bright);
-    canvas.drawText(10, 8 - 2, FixedStringBuilder<8>("%.1f", engine.tempo()));
+    painter.drawTextBaseline(10, 8, FixedStringBuilder<8>("%.1f", engine.tempo()));
 }
 
 void WindowPainter::drawActiveState(Canvas &canvas, int track, int playPattern, int editPattern, bool snapshotActive, bool songActive) {
-    canvas.setFont(Font::Tiny);
+    ScreenPainter painter(canvas);
+    painter.setFont(Font::Tiny);
+    painter.setOffset(0, -2);
+
     canvas.setBlendMode(BlendMode::Set);
     canvas.setColor(Color::Bright);
 
     // draw selected track (shifted right for better spacing from BPM)
-    canvas.drawText(45, 8 - 2, FixedStringBuilder<8>("T%d", track + 1));
+    painter.drawTextBaseline(45, 8, FixedStringBuilder<8>("T%d", track + 1));
 
     if (snapshotActive) {
-        drawInvertedText(canvas, 61, 8 - 2, "SNAP", true);
+        drawInvertedText(painter, 68, 8, "SNAP", true);
     } else {
-        // draw active pattern
-        drawInvertedText(canvas, 61, 8 - 2, FixedStringBuilder<8>("P%d", playPattern + 1), songActive);
+        // draw active pattern (shifted right to accommodate two-digit track numbers)
+        drawInvertedText(painter, 68, 8, FixedStringBuilder<8>("P%d", playPattern + 1), songActive);
 
-        // draw edit pattern
-        drawInvertedText(canvas, 80, 8 - 2, FixedStringBuilder<8>("E%d", editPattern + 1), playPattern == editPattern);
+        // draw edit pattern (shifted right to maintain spacing)
+        drawInvertedText(painter, 87, 8, FixedStringBuilder<8>("E%d", editPattern + 1), playPattern == editPattern);
     }
 }
 
 void WindowPainter::drawActiveMode(Canvas &canvas, const char *mode) {
-    canvas.setFont(Font::Tiny);
+    ScreenPainter painter(canvas);
+    painter.setFont(Font::Tiny);
+    painter.setOffset(0, -2);
+
     canvas.setBlendMode(BlendMode::Set);
     canvas.setColor(Color::Bright);
-    canvas.drawText(PageWidth - canvas.textWidth(mode) - 2, 8 - 2, mode);
+    int x = PageWidth - painter.textWidth(mode) - 2;
+    painter.drawTextBaseline(x, 8, mode);
 }
 
 void WindowPainter::drawActiveFunction(Canvas &canvas, const char *function) {
-    canvas.setFont(Font::Tiny);
+    ScreenPainter painter(canvas);
+    painter.setFont(Font::Tiny);
+    painter.setOffset(0, -2);
+
     canvas.setBlendMode(BlendMode::Set);
     canvas.setColor(Color::Bright);
-    canvas.drawText(100, 8 - 2, function);
+    painter.drawTextBaseline(100, 8, function);
 }
 
 void WindowPainter::drawHeader(Canvas &canvas, const Model &model, const Engine &engine, const char *mode) {

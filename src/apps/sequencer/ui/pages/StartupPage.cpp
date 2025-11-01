@@ -212,7 +212,7 @@ void StartupPage::draw(Canvas &canvas) {
         }
     }
 
-    // Modulove & Phaserville credit below logo with hearts
+    // Modulove & Phazerville credit below logo with hearts
     if (t > 0.2f) {
         canvas.setBlendMode(BlendMode::Set);
         Color creditColor = fadeIn > 0.7f ? Color::Medium : Color::Low;
@@ -222,7 +222,7 @@ void StartupPage::draw(Canvas &canvas) {
         // Draw text parts separately so we can insert heart symbols
         const char *part1 = "WESTLICHT";
         const char *part2 = "MODULOVE";
-        const char *part3 = "PHASERVILLE";
+        const char *part3 = "PHAZERVILLE";
 
         int part1Width = canvas.textWidth(part1);
         int part2Width = canvas.textWidth(part2);
@@ -234,23 +234,23 @@ void StartupPage::draw(Canvas &canvas) {
         int startX = (Width - totalWidth) / 2;
 
         // WESTLICHT
-        canvas.drawText(startX, 42, part1);  // Below logo at y=42
+        canvas.drawText(startX, 45, part1);  // Below logo
         startX += part1Width + spacing;
 
         // Heart 1 (y-4 to align with text baseline)
-        drawHeart(canvas, startX, 38, creditColor);
+        drawHeart(canvas, startX, 41, creditColor);
         startX += heartWidth + spacing;
 
         // MODULOVE
-        canvas.drawText(startX, 42, part2);
+        canvas.drawText(startX, 45, part2);
         startX += part2Width + spacing;
 
         // Heart 2 (y-4 to align with text baseline)
-        drawHeart(canvas, startX, 38, creditColor);
+        drawHeart(canvas, startX, 41, creditColor);
         startX += heartWidth + spacing;
 
-        // PHASERVILLE
-        canvas.drawText(startX, 42, part3);
+        // PHAZERVILLE
+        canvas.drawText(startX, 45, part3);
     }
 
     // Loading progress bar at very bottom (no glitches)

@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <cmath>
+#include <algorithm>
 
 class ModulatorEngine {
 public:
@@ -36,13 +37,18 @@ public:
             _adsrState[i] = ADSRState::Idle;
             _adsrLevel[i] = 0;
             _adsrTimer[i] = 0;
+            _adsrReleaseStartLevel[i] = 0;
         }
+        _tickDurationSec = DefaultTickDurationSec;
     }
 
-    void tick(uint32_t tick, const Modulator &modulator, int index, bool gate) {
+    void tick(uint32_t tick, const Modulator &modulator, int index, bool gate, float tickDurationSec) {
         if (index < 0 || index >= CONFIG_MODULATOR_COUNT) {
             return;
         }
+
+        _tickDurationSec = (tickDurationSec > 0.f) ? tickDurationSec : DefaultTickDurationSec;
+        (void)tick;
 
         // Handle Random shape in Triggered mode
         if (modulator.shape() == Modulator::Shape::Random &&
@@ -59,7 +65,7 @@ public:
             int smoothMs = modulator.smooth();
 
             // Calculate slew rate using tempo-aware calculation (unified with clocked mode)
-            int slewRate = calculateSlewRate(smoothMs, modulator.rate());
+            int slewRate = msToTicks(smoothMs);
 
             int diff = target - current;
             current += diff / slewRate;
@@ -84,10 +90,12 @@ public:
                 // Start attack phase
                 _adsrState[index] = ADSRState::Attack;
                 _adsrTimer[index] = 0;
+                _adsrReleaseStartLevel[index] = _adsrLevel[index];
             } else if (gateFalling && _adsrState[index] != ADSRState::Release) {
                 // Start release phase
                 _adsrState[index] = ADSRState::Release;
                 _adsrTimer[index] = 0;
+                _adsrReleaseStartLevel[index] = _adsrLevel[index];
             }
 
             // Calculate envelope level based on current state
@@ -103,11 +111,11 @@ public:
                     _adsrState[index] = ADSRState::Decay;
                     _adsrTimer[index] = 0;
                 } else {
-                    // At 120 BPM, 1 tick = ~2.6ms (CONFIG_PPQN=192, 60000ms/120bpm = 500ms per beat, 500/192 = 2.6ms)
-                    int attackTicks = (attackMs * CONFIG_PPQN) / 2500; // Rough conversion: ms to ticks
+                    int attackTicks = msToTicks(attackMs);
                     _adsrTimer[index]++;
                     level = utils::clamp(static_cast<int>((127 * _adsrTimer[index]) / attackTicks), 0, 127);
-                    if (level >= 127) {
+                    if (_adsrTimer[index] >= static_cast<uint32_t>(attackTicks)) {
+                        level = 127;
                         _adsrState[index] = ADSRState::Decay;
                         _adsrTimer[index] = 0;
                     }
@@ -121,11 +129,12 @@ public:
                     level = sustainLevel;
                     _adsrState[index] = ADSRState::Sustain;
                 } else {
-                    int decayTicks = (decayMs * CONFIG_PPQN) / 2500;
+                    int decayTicks = msToTicks(decayMs);
                     _adsrTimer[index]++;
                     int decayAmount = 127 - sustainLevel;
-                    level = 127 - utils::clamp(static_cast<int>((decayAmount * _adsrTimer[index]) / decayTicks), 0, decayAmount);
-                    if (level <= sustainLevel) {
+                    int decayProgress = utils::clamp(static_cast<int>((decayAmount * _adsrTimer[index]) / decayTicks), 0, decayAmount);
+                    level = 127 - decayProgress;
+                    if (_adsrTimer[index] >= static_cast<uint32_t>(decayTicks)) {
                         level = sustainLevel;
                         _adsrState[index] = ADSRState::Sustain;
                     }
@@ -137,23 +146,28 @@ public:
                 break;
             case ADSRState::Release: {
                 int releaseMs = modulator.release();
-                int startLevel = _adsrLevel[index];  // Level when release started
+                int startLevel = _adsrReleaseStartLevel[index];
                 if (releaseMs == 0) {
                     level = 0;
                     _adsrState[index] = ADSRState::Idle;
                 } else {
-                    int releaseTicks = (releaseMs * CONFIG_PPQN) / 2500;
+                    int releaseTicks = msToTicks(releaseMs);
                     _adsrTimer[index]++;
-                    level = startLevel - utils::clamp(static_cast<int>((startLevel * _adsrTimer[index]) / releaseTicks), 0, startLevel);
-                    if (level <= 0) {
+                    int releaseProgress = utils::clamp(static_cast<int>((startLevel * _adsrTimer[index]) / releaseTicks), 0, startLevel);
+                    level = startLevel - releaseProgress;
+                    if (_adsrTimer[index] >= static_cast<uint32_t>(releaseTicks)) {
                         level = 0;
                         _adsrState[index] = ADSRState::Idle;
+                        _adsrReleaseStartLevel[index] = 0;
                     }
                 }
                 break;
             }
             }
 
+            if (_adsrState[index] != ADSRState::Release) {
+                _adsrReleaseStartLevel[index] = level;
+            }
             _adsrLevel[index] = level;
 
             // Apply amplitude scaling (Amplitude is the main level control for ADSR)
@@ -241,7 +255,7 @@ private:
             int smoothMs = modulator.smooth();
 
             // Calculate slew rate using tempo-aware calculation
-            int slewRate = calculateSlewRate(smoothMs, modulator.rate());
+            int slewRate = msToTicks(smoothMs);
 
             int diff = target - current;
             current += diff / slewRate;
@@ -258,15 +272,16 @@ private:
      * Calculate slew rate for smooth parameter interpolation
      * Uses tempo-aware calculation for musical timing
      */
-    int calculateSlewRate(int smoothMs, uint32_t rate) {
-        if (smoothMs == 0) {
-            return 1;  // Instant
+    int msToTicks(int ms) const {
+        if (ms <= 0) {
+            return 1;
         }
-        // At 120 BPM, 1 tick = ~2.6ms, so we calculate ticks needed for smooth time
-        // CONFIG_PPQN = 192 ticks per quarter note
-        int ticksForSmooth = (smoothMs * CONFIG_PPQN) / 2500;  // Approximate ms to ticks
-        return (ticksForSmooth > 0) ? ticksForSmooth : 1;
+        float duration = (_tickDurationSec > 0.f) ? _tickDurationSec : DefaultTickDurationSec;
+        float ticks = ms / (duration * 1000.f);
+        return std::max(1, static_cast<int>(std::ceil(ticks)));
     }
+
+    static constexpr float DefaultTickDurationSec = 60.f / (120.f * CONFIG_PPQN);
 
     uint32_t _phaseAccumulator[CONFIG_MODULATOR_COUNT] = {0};
     int _currentValue[CONFIG_MODULATOR_COUNT] = {0};
@@ -280,4 +295,6 @@ private:
     ADSRState _adsrState[CONFIG_MODULATOR_COUNT] = {ADSRState::Idle};
     int _adsrLevel[CONFIG_MODULATOR_COUNT] = {0};
     uint32_t _adsrTimer[CONFIG_MODULATOR_COUNT] = {0};
+    int _adsrReleaseStartLevel[CONFIG_MODULATOR_COUNT] = {0};
+    float _tickDurationSec = DefaultTickDurationSec;
 };

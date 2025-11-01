@@ -306,7 +306,7 @@ public:
 
     int attack() const { return _attack; }
     void setAttack(int attack) {
-        _attack = clamp(attack, 0, 2000);
+        _attack = clamp(attack, 0, 6000);
     }
 
     void editAttack(int value, bool shift) {
@@ -321,7 +321,7 @@ public:
 
     int decay() const { return _decay; }
     void setDecay(int decay) {
-        _decay = clamp(decay, 0, 2000);
+        _decay = clamp(decay, 0, 6000);
     }
 
     void editDecay(int value, bool shift) {
@@ -360,7 +360,7 @@ public:
 
     int release() const { return _release; }
     void setRelease(int release) {
-        _release = clamp(release, 0, 2000);
+        _release = clamp(release, 0, 6000);
     }
 
     void editRelease(int value, bool shift) {
