@@ -101,6 +101,7 @@ void MidiOutputEngine::update(bool forceSendCC) {
 }
 
 void MidiOutputEngine::sendGate(int trackIndex, bool gate) {
+    if (trackIndex < 0 || trackIndex >= CONFIG_TRACK_COUNT) return;
     for (int outputIndex = 0; outputIndex < CONFIG_MIDI_OUTPUT_COUNT; ++outputIndex) {
         const auto &output = _midiOutput.output(outputIndex);
         auto &outputState = _outputStates[outputIndex];
@@ -112,6 +113,7 @@ void MidiOutputEngine::sendGate(int trackIndex, bool gate) {
 }
 
 void MidiOutputEngine::sendSlide(int trackIndex, bool slide) {
+    if (trackIndex < 0 || trackIndex >= CONFIG_TRACK_COUNT) return;
     for (int outputIndex = 0; outputIndex < CONFIG_MIDI_OUTPUT_COUNT; ++outputIndex) {
         const auto &output = _midiOutput.output(outputIndex);
         auto &outputState = _outputStates[outputIndex];
@@ -126,6 +128,7 @@ void MidiOutputEngine::sendSlide(int trackIndex, bool slide) {
 }
 
 void MidiOutputEngine::sendCv(int trackIndex, float cv) {
+    if (trackIndex < 0 || trackIndex >= CONFIG_TRACK_COUNT) return;
     for (int outputIndex = 0; outputIndex < CONFIG_MIDI_OUTPUT_COUNT; ++outputIndex) {
         const auto &output = _midiOutput.output(outputIndex);
         auto &outputState = _outputStates[outputIndex];
@@ -195,6 +198,7 @@ void MidiOutputEngine::sendMidi(MidiPort port, const MidiMessage &message) {
 }
 
 void MidiOutputEngine::sendCvIn(int cvInIndex, float cv) {
+    if (cvInIndex < 0 || cvInIndex >= CONFIG_CV_INPUT_CHANNELS) return;
     for (int outputIndex = 0; outputIndex < CONFIG_MIDI_OUTPUT_COUNT; ++outputIndex) {
         const auto &output = _midiOutput.output(outputIndex);
         if (output.event() == MidiOutput::Output::Event::ControlChange) {
@@ -215,6 +219,7 @@ void MidiOutputEngine::sendCvIn(int cvInIndex, float cv) {
 }
 
 void MidiOutputEngine::sendModulator(int modulatorIndex, int value) {
+    if (modulatorIndex < 0 || modulatorIndex >= CONFIG_MODULATOR_COUNT) return;
     for (int outputIndex = 0; outputIndex < CONFIG_MIDI_OUTPUT_COUNT; ++outputIndex) {
         const auto &output = _midiOutput.output(outputIndex);
         if (output.event() == MidiOutput::Output::Event::ControlChange) {
