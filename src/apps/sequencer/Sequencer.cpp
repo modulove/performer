@@ -150,7 +150,7 @@ static void assert_handler(const char *filename, int line, const char *msg) {
 
 int main(void) {
     System::init();
-    System::startWatchdog(1000);
+    System::startWatchdog(5000);
     Console::init();
     HighResolutionTimer::init();
 
